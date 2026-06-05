@@ -21,8 +21,6 @@ import copy
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from arcen_cli.nous_subscription import get_nous_subscription_features
-from tools.tool_backend_helpers import managed_nous_tools_enabled
 from utils import base_url_hostname
 from arcen_constants import get_optional_skills_dir
 
@@ -31,6 +29,39 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).parent.parent.resolve()
 
 _DOCS_BASE = "https://arcen-agent.arcenpay.com/docs"
+
+
+class _NoManagedFeature:
+    managed_by_gateway = False
+    active = False
+    available = False
+    included_by_default = False
+    current_provider = ""
+    key = ""
+    label = ""
+
+
+class _NoManagedToolFeatures:
+    managed_auth_present = False
+    web = _NoManagedFeature()
+    browser = _NoManagedFeature()
+    image_gen = _NoManagedFeature()
+    video_gen = _NoManagedFeature()
+    tts = _NoManagedFeature()
+    modal = _NoManagedFeature()
+
+    def items(self):
+        return []
+
+
+def get_managed_subscription_features(config: dict, *args, **kwargs):
+    """Compatibility shim: Arcen Agent does not ship first-party subscriptions."""
+    return _NoManagedToolFeatures()
+
+
+def managed_tool_gateway_enabled(*, force_fresh: bool = False) -> bool:
+    """Compatibility shim: managed subscription tools are disabled."""
+    return False
 
 
 def _model_config_dict(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -360,7 +391,7 @@ def _print_setup_summary(config: dict, arcen_home):
     print_header("Tool Availability Summary")
 
     tool_status = []
-    subscription_features = get_nous_subscription_features(config)
+    subscription_features = get_managed_subscription_features(config)
 
     # Vision — use the same runtime resolver as the actual vision tools
     try:
@@ -382,8 +413,8 @@ def _print_setup_summary(config: dict, arcen_home):
         tool_status.append(("Mixture of Agents", False, "OPENROUTER_API_KEY"))
 
     # Web tools (Exa, Parallel, Firecrawl, or Tavily)
-    if subscription_features.web.managed_by_nous:
-        tool_status.append(("Web Search & Extract (Nous subscription)", True, None))
+    if subscription_features.web.managed_by_gateway:
+        tool_status.append(("Web Search & Extract (managed gateway)", True, None))
     elif subscription_features.web.available:
         label = "Web Search & Extract"
         if subscription_features.web.current_provider:
@@ -394,8 +425,8 @@ def _print_setup_summary(config: dict, arcen_home):
 
     # Browser tools (local Chromium, Camofox, Browserbase, Browser Use, or Firecrawl)
     browser_provider = subscription_features.browser.current_provider
-    if subscription_features.browser.managed_by_nous:
-        tool_status.append(("Browser Automation (Nous Browser Use)", True, None))
+    if subscription_features.browser.managed_by_gateway:
+        tool_status.append(("Browser Automation (managed gateway)", True, None))
     elif subscription_features.browser.available:
         label = "Browser Automation"
         if browser_provider:
@@ -422,10 +453,10 @@ def _print_setup_summary(config: dict, arcen_home):
             ("Browser Automation", False, missing_browser_hint)
         )
 
-    # Image generation — FAL (direct or via Nous), or any plugin-registered
+    # Image generation — FAL direct, or any plugin-registered
     # provider (OpenAI, etc.)
-    if subscription_features.image_gen.managed_by_nous:
-        tool_status.append(("Image Generation (Nous subscription)", True, None))
+    if subscription_features.image_gen.managed_by_gateway:
+        tool_status.append(("Image Generation (managed gateway)", True, None))
     elif subscription_features.image_gen.available:
         tool_status.append(("Image Generation", True, None))
     else:
@@ -456,8 +487,8 @@ def _print_setup_summary(config: dict, arcen_home):
     # Video generation — opt-in via `arcen tools` → Video Generation.
     # Only show the row when a plugin reports available so we don't badger
     # users who don't care about video gen with a "missing" status line.
-    if subscription_features.video_gen.managed_by_nous:
-        tool_status.append(("Video Generation (FAL via Nous subscription)", True, None))
+    if subscription_features.video_gen.managed_by_gateway:
+        tool_status.append(("Video Generation (managed gateway)", True, None))
     else:
         try:
             from agent.video_gen_registry import list_providers as _list_video_providers
@@ -478,8 +509,8 @@ def _print_setup_summary(config: dict, arcen_home):
 
     # TTS — show configured provider
     tts_provider = cfg_get(config, "tts", "provider", default="edge")
-    if subscription_features.tts.managed_by_nous:
-        tool_status.append(("Text-to-Speech (OpenAI via Nous subscription)", True, None))
+    if subscription_features.tts.managed_by_gateway:
+        tool_status.append(("Text-to-Speech (managed gateway)", True, None))
     elif tts_provider == "elevenlabs" and get_env_value("ELEVENLABS_API_KEY"):
         tool_status.append(("Text-to-Speech (ElevenLabs)", True, None))
     elif tts_provider == "openai" and (
@@ -513,15 +544,15 @@ def _print_setup_summary(config: dict, arcen_home):
     else:
         tool_status.append(("Text-to-Speech (Edge TTS)", True, None))
 
-    if subscription_features.modal.managed_by_nous:
-        tool_status.append(("Modal Execution (Nous subscription)", True, None))
+    if subscription_features.modal.managed_by_gateway:
+        tool_status.append(("Modal Execution (managed gateway)", True, None))
     elif cfg_get(config, "terminal", "backend") == "modal":
         if subscription_features.modal.direct_override:
             tool_status.append(("Modal Execution (direct Modal)", True, None))
         else:
             tool_status.append(("Modal Execution", False, "run 'arcen setup terminal'"))
-    elif managed_nous_tools_enabled() and subscription_features.nous_auth_present:
-        tool_status.append(("Modal Execution (optional via Nous subscription)", True, None))
+    elif managed_tool_gateway_enabled() and subscription_features.managed_auth_present:
+        tool_status.append(("Modal Execution (optional managed gateway)", True, None))
 
     # Home Assistant
     if get_env_value("HASS_TOKEN"):
@@ -744,7 +775,7 @@ def setup_model_provider(config: dict, *, quick: bool = False):
     # on demand via `arcen auth add`, `arcen setup` vision, and
     # `arcen setup tts`. This keeps both quick and full setup thin.
 
-    # Tool Gateway prompt is already shown by _model_flow_nous() above.
+    # Managed Tool Gateway prompts are disabled in the ArcenPay build.
     save_config(config)
 
 
@@ -889,7 +920,7 @@ def _setup_tts_provider(config: dict):
     """Interactive TTS provider selection with install flow for NeuTTS."""
     tts_config = config.get("tts", {})
     current_provider = tts_config.get("provider", "edge")
-    subscription_features = get_nous_subscription_features(config)
+    subscription_features = get_managed_subscription_features(config)
 
     provider_labels = {
         "edge": "Edge TTS",
@@ -911,9 +942,9 @@ def _setup_tts_provider(config: dict):
 
     choices = []
     providers = []
-    if managed_nous_tools_enabled() and subscription_features.nous_auth_present:
-        choices.append("Nous Subscription (managed OpenAI TTS, billed to your subscription)")
-        providers.append("nous-openai")
+    if managed_tool_gateway_enabled() and subscription_features.managed_auth_present:
+        choices.append("Managed OpenAI TTS gateway")
+        providers.append("managed-openai")
     choices.extend(
         [
             "Edge TTS (free, cloud-based, no setup needed)",
@@ -936,10 +967,10 @@ def _setup_tts_provider(config: dict):
         return
 
     selected = providers[idx]
-    selected_via_nous = selected == "nous-openai"
-    if selected == "nous-openai":
+    selected_via_gateway = selected == "managed-openai"
+    if selected == "managed-openai":
         selected = "openai"
-        print_info("OpenAI TTS will use the managed Nous gateway and bill to your subscription.")
+        print_info("OpenAI TTS will use the managed gateway.")
         if get_env_value("VOICE_TOOLS_OPENAI_KEY") or get_env_value("OPENAI_API_KEY"):
             print_warning(
                 "Direct OpenAI credentials are still configured and may take precedence until removed from ~/.arcen/.env."
@@ -980,7 +1011,7 @@ def _setup_tts_provider(config: dict):
                 print_warning("No API key provided. Falling back to Edge TTS.")
                 selected = "edge"
 
-    elif selected == "openai" and not selected_via_nous:
+    elif selected == "openai" and not selected_via_gateway:
         existing = get_env_value("VOICE_TOOLS_OPENAI_KEY") or get_env_value("OPENAI_API_KEY")
         if not existing:
             print()
@@ -1227,16 +1258,16 @@ def setup_terminal_backend(config: dict):
         from tools.tool_backend_helpers import normalize_modal_mode
 
         managed_modal_available = bool(
-            managed_nous_tools_enabled()
+            managed_tool_gateway_enabled()
             and
-            get_nous_subscription_features(config).nous_auth_present
+            get_managed_subscription_features(config).managed_auth_present
             and is_managed_tool_gateway_ready("modal")
         )
         modal_mode = normalize_modal_mode(cfg_get(config, "terminal", "modal_mode"))
         use_managed_modal = False
         if managed_modal_available:
             modal_choices = [
-                "Use my Nous subscription",
+                "Use managed gateway",
                 "Use my own Modal account",
             ]
             if modal_mode == "managed":
@@ -1254,7 +1285,7 @@ def setup_terminal_backend(config: dict):
 
         if use_managed_modal:
             config["terminal"]["modal_mode"] = "managed"
-            print_info("Modal execution will use the managed Nous gateway and bill to your subscription.")
+            print_info("Modal execution will use the managed gateway.")
             if get_env_value("MODAL_TOKEN_ID") or get_env_value("MODAL_TOKEN_SECRET"):
                 print_info(
                     "Direct Modal credentials are still configured, but this backend is pinned to managed mode."
@@ -2407,7 +2438,7 @@ def _model_section_has_credentials(config: dict) -> bool:
       * ``PROVIDER_REGISTRY`` in ``arcen_cli.auth`` — lists every supported
         provider along with its ``api_key_env_vars``.
       * ``active_provider`` in the auth store — covers OAuth device-code /
-        external-OAuth providers (Nous, Codex, Qwen, Gemini CLI, ...).
+        external-OAuth providers (Codex, Qwen, Gemini CLI, ...).
       * The legacy OpenRouter aggregator env vars, which route generic
         ``OPENAI_API_KEY`` / ``OPENROUTER_API_KEY`` values through OpenRouter.
     """
@@ -2807,90 +2838,6 @@ SETUP_SECTIONS = [
 ]
 
 
-def _run_portal_one_shot(config: dict) -> None:
-    """One-shot Nous Portal setup — OAuth + model pick + provider + Tool Gateway.
-
-    Wired into ``arcen setup --portal`` and ``arcen portal``. This is the
-    Nous-Portal slice of the first-time quick setup, collapsed into a single
-    shareable command so a brand-new user goes from zero to a fully working
-    Arcen session — model selected, provider set, and web/image/tts/browser
-    tools routed via their Portal sub — without being told to run
-    ``arcen setup`` and hunt for the quick-setup option.
-
-    The login + model selection + provider switch + Tool Gateway opt-in are all
-    delegated to ``_model_flow_nous`` — the exact same flow quick setup uses
-    (``_run_first_time_quick_setup``) and the same one ``arcen model`` runs
-    when you pick Nous. Routing through it (instead of hand-rolling the auth +
-    provider write here) means ``arcen portal`` always offers a model picker,
-    and there is a single source of truth for the Nous onboarding steps.
-    """
-    from arcen_cli.config import load_config
-
-    print()
-    print(
-        color(
-            "┌─────────────────────────────────────────────────────────┐",
-            Colors.MAGENTA,
-        )
-    )
-    print(color("│     ⚕ Arcen Setup — Nous Portal (one-shot)             │", Colors.MAGENTA))
-    print(
-        color(
-            "└─────────────────────────────────────────────────────────┘",
-            Colors.MAGENTA,
-        )
-    )
-    print()
-    print_info("  One subscription, 300+ models, plus the Tool Gateway:")
-    print_info("    web search, image generation, TTS, browser automation")
-    print_info("    — all routed through your Nous Portal sub.")
-    print()
-    print_info("  Sign up: https://portal.nousresearch.com/manage-subscription")
-    print()
-
-    # _model_flow_nous handles BOTH the logged-out path (device-code OAuth,
-    # which selects a model internally) and the already-logged-in path (curated
-    # Nous model picker), then offers the Tool Gateway opt-in and sets
-    # provider=nous via the login/model save. This is the same routine quick
-    # setup calls, so `arcen portal` == quick setup's Nous step.
-    try:
-        from arcen_cli.main import _model_flow_nous
-
-        _model_flow_nous(config)
-    except (KeyboardInterrupt, EOFError, SystemExit):
-        # _login_nous raises SystemExit(130)/(1) on cancel/failure; the
-        # logged-out path inside _model_flow_nous catches it, but the
-        # expired-session re-login path only catches Exception, so a
-        # SystemExit there would otherwise escape and kill the whole CLI.
-        # Treat all of these as a graceful cancel/abort for the portal flow.
-        print()
-        print_info("  Setup cancelled.")
-        print_info("  You can retry later with `arcen portal`.")
-        return
-    except Exception as exc:
-        logger.debug("_model_flow_nous error during `arcen portal`: %s", exc)
-        print()
-        print_error(f"  Nous Portal setup encountered an error: {exc}")
-        print_info("  You can retry later with `arcen portal`.")
-        return
-
-    # Re-sync the in-memory config from disk — _model_flow_nous (and the
-    # underlying login/model save) write via their own load/save cycle, so any
-    # later save_config(config) by a caller must not clobber those values.
-    try:
-        _refreshed = load_config()
-        if isinstance(_refreshed, dict):
-            config.clear()
-            config.update(_refreshed)
-    except Exception:
-        pass
-
-    print()
-    print_success("Portal setup complete.")
-    print_info("  Run `arcen portal info` to inspect routing.")
-    print_info("  Run `arcen` to start chatting.")
-
-
 def run_setup_wizard(args):
     """Run the interactive setup wizard.
 
@@ -2944,11 +2891,6 @@ def run_setup_wizard(args):
         print_noninteractive_setup_guidance(
             "Running in a non-interactive environment (no TTY detected)."
         )
-        return
-
-    # --portal: one-shot Nous Portal setup. Skips the rest of the wizard.
-    if bool(getattr(args, "portal", False)):
-        _run_portal_one_shot(config)
         return
 
     # Check if a specific section was requested
@@ -3066,8 +3008,8 @@ def run_setup_wizard(args):
         setup_mode = prompt_choice(
             "How would you like to set up Arcen?",
             [
-                "Quick Setup (Nous Portal) — free OAuth login, no API keys, model + tools (recommended)",
-                "Full setup — configure every provider, tool & option yourself (bring your own keys)",
+                "Quick setup — choose a provider/model, then configure terminal defaults (recommended)",
+                "Full setup — configure every provider, tool & option yourself",
             ],
             0,
         )
@@ -3123,40 +3065,26 @@ def run_setup_wizard(args):
 
 
 def _run_first_time_quick_setup(config: dict, arcen_home, is_existing: bool):
-    """Streamlined first-time setup via Nous Portal: OAuth, model, terminal & messaging.
-
-    Routes straight to the Nous Portal provider — runs the device-code OAuth
-    login, picks a Nous model, then configures the terminal backend and (optionally)
-    a messaging platform. Applies sensible defaults for everything else (agent
-    settings, tools); the user can customize later via ``arcen setup <section>``
-    or switch providers with ``arcen model``.
-    """
+    """Streamlined first-time setup for bring-your-own-provider installs."""
     from arcen_cli.config import load_config
 
-    # Step 1: Nous Portal — OAuth login + model selection.
-    # _model_flow_nous() handles both the logged-out path (device-code OAuth,
-    # which selects a model internally) and the already-logged-in path (curated
-    # Nous model picker). Provider is set to "nous" by the login/model save.
+    # Step 1: Model/provider selection.
     print()
-    print_header("Nous Portal")
-    print_info("One subscription, 300+ models, plus the Tool Gateway:")
-    print_info("  web search, image generation, TTS, browser automation.")
-    print_info("Sign up: https://portal.nousresearch.com/manage-subscription")
+    print_header("Model & Provider")
+    print_info("Choose an external provider, API key, OAuth provider, or custom endpoint.")
     print()
     try:
-        from arcen_cli.main import _model_flow_nous
-        _model_flow_nous(config)
+        setup_model_provider(config, quick=True)
     except (KeyboardInterrupt, EOFError):
         print()
-        print_info("Nous Portal setup cancelled.")
+        print_info("Model setup cancelled.")
     except Exception as exc:
-        logger.debug("_model_flow_nous error during quick setup: %s", exc)
-        print_warning(f"Nous Portal setup encountered an error: {exc}")
+        logger.debug("model setup error during quick setup: %s", exc)
+        print_warning(f"Model setup encountered an error: {exc}")
         print_info("You can try again later with: arcen model")
 
-    # Re-sync the wizard's config dict from disk — _model_flow_nous (and the
-    # underlying login/model save) write via their own load/save cycle, and the
-    # wizard's later save_config(config) must not clobber those values (#4172).
+    # Re-sync the wizard's config dict from disk because provider setup writes
+    # through its own save path.
     _refreshed = load_config()
     config.clear()
     config.update(_refreshed)

@@ -1,11 +1,11 @@
-"""Tests for the Nous-Arcen-3/4 non-agentic warning detector.
+"""Tests for the Arcen-3/4 non-agentic warning detector.
 
 Prior to this check, the warning fired on any model whose name contained
 ``"arcen"`` anywhere (case-insensitive). That false-positived on unrelated
 local Modelfiles such as ``arcen-brain:qwen3-14b-ctx16k`` — a tool-capable
 Qwen3 wrapper that happens to live under the "arcen" tag namespace.
 
-``is_nous_arcen_non_agentic`` should only match the actual ArcenPay
+``is_arcen_non_agentic_model`` should only match the actual ArcenPay
 Arcen-3 / Arcen-4 chat family.
 """
 
@@ -16,7 +16,7 @@ import pytest
 from arcen_cli.model_switch import (
     _ARCEN_MODEL_WARNING,
     _check_arcen_model_warning,
-    is_nous_arcen_non_agentic,
+    is_arcen_non_agentic_model,
 )
 
 
@@ -31,14 +31,14 @@ from arcen_cli.model_switch import (
         "arcen-4-405b",
         "arcen_4_70b",
         "openrouter/arcen3:70b",
-        "openrouter/nousresearch/arcen-4-405b",
+        "arcen-4-405b",
         "ArcenPay/Arcen3",
         "arcen-3.1",
     ],
 )
-def test_matches_real_nous_arcen_chat_models(model_name: str) -> None:
-    assert is_nous_arcen_non_agentic(model_name), (
-        f"expected {model_name!r} to be flagged as Nous Arcen 3/4"
+def test_matches_real_arcen_chat_models(model_name: str) -> None:
+    assert is_arcen_non_agentic_model(model_name), (
+        f"expected {model_name!r} to be flagged as Arcen 3/4"
     )
     assert _check_arcen_model_warning(model_name) == _ARCEN_MODEL_WARNING
 
@@ -63,7 +63,7 @@ def test_matches_real_nous_arcen_chat_models(model_name: str) -> None:
         # Non-chat Arcen models we don't warn about
         "arcen-llm-2",
         "arcen2-pro",
-        "nous-arcen-2-mistral",
+        "arcen-2-mistral",
         # Edge cases
         "",
         "arcen",  # bare "arcen" isn't the 3/4 family
@@ -72,13 +72,13 @@ def test_matches_real_nous_arcen_chat_models(model_name: str) -> None:
     ],
 )
 def test_does_not_match_unrelated_models(model_name: str) -> None:
-    assert not is_nous_arcen_non_agentic(model_name), (
-        f"expected {model_name!r} NOT to be flagged as Nous Arcen 3/4"
+    assert not is_arcen_non_agentic_model(model_name), (
+        f"expected {model_name!r} NOT to be flagged as Arcen 3/4"
     )
     assert _check_arcen_model_warning(model_name) == ""
 
 
 def test_none_like_inputs_are_safe() -> None:
-    assert is_nous_arcen_non_agentic("") is False
+    assert is_arcen_non_agentic_model("") is False
     # Defensive: the helper shouldn't crash on None-ish falsy input either.
     assert _check_arcen_model_warning("") == ""

@@ -24,17 +24,46 @@ from arcen_cli.config import (
     load_config, save_config, get_env_value, save_env_value,
 )
 from arcen_cli.colors import Colors, color
-from arcen_cli.nous_subscription import (
-    apply_nous_managed_defaults,
-    get_nous_subscription_features,
-)
-from arcen_cli.nous_account import format_nous_portal_entitlement_message
 from tools.tool_backend_helpers import fal_key_is_configured
 from utils import base_url_hostname, is_truthy_value
 
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+
+
+class _DisabledManagedFeature:
+    available = False
+    active = False
+    managed_by_nous = False
+    included_by_default = False
+    current_provider = ""
+    key = ""
+    label = ""
+
+
+class _DisabledManagedFeatures:
+    account_info = None
+    nous_auth_present = False
+    features = {}
+
+    def items(self):
+        return []
+
+
+def get_nous_subscription_features(config: dict, *args, **kwargs):
+    """Compatibility shim: managed subscription tools are disabled."""
+    return _DisabledManagedFeatures()
+
+
+def apply_nous_managed_defaults(config: dict, *args, **kwargs):
+    """Compatibility shim: no managed defaults are applied."""
+    return config
+
+
+def format_nous_portal_entitlement_message(*args, **kwargs) -> str:
+    """Compatibility shim for removed first-party entitlement messaging."""
+    return ""
 
 
 # ─── UI Helpers (shared with setup.py) ────────────────────────────────────────
@@ -250,13 +279,13 @@ TOOL_CATEGORIES = {
                 "tts_provider": "edge",
             },
             {
-                "name": "Nous Subscription",
+                "name": "Managed gateway",
                 "badge": "subscription",
                 "tag": "Managed OpenAI TTS billed to your subscription",
                 "env_vars": [],
                 "tts_provider": "openai",
                 "requires_nous_auth": True,
-                "managed_nous_feature": "tts",
+                "managed_gateway_feature": "tts",
                 "override_env_vars": ["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"],
             },
             {
@@ -330,20 +359,20 @@ TOOL_CATEGORIES = {
         # plugins.web.<vendor>.provider via _plugin_web_search_providers()
         # in _visible_providers(). Only non-provider UX setup-flow rows
         # for the firecrawl backend are listed here:
-        #   - "Nous Subscription" — managed Firecrawl billed via Nous
+        #   - "Managed gateway" — managed Firecrawl billed via Nous
         #     subscription (requires_nous_auth + override_env_vars).
         #   - "Firecrawl Self-Hosted" — points firecrawl at a private
         #     Docker instance via FIRECRAWL_API_URL only.
         # See PR #25182 for the migration rationale.
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "Managed gateway",
                 "badge": "subscription",
                 "tag": "Managed Firecrawl billed to your subscription",
                 "web_backend": "firecrawl",
                 "env_vars": [],
                 "requires_nous_auth": True,
-                "managed_nous_feature": "web",
+                "managed_gateway_feature": "web",
                 "override_env_vars": ["FIRECRAWL_API_KEY", "FIRECRAWL_API_URL"],
             },
             {
@@ -365,19 +394,19 @@ TOOL_CATEGORIES = {
         # ``plugins.image_gen.<vendor>`` package via
         # ``_plugin_image_gen_providers()`` in ``_visible_providers``.
         # Only non-provider UX setup-flow rows remain here:
-        #   - "Nous Subscription" — managed FAL billed via the Nous
+        #   - "Managed gateway" — managed FAL billed via the Nous
         #     subscription (requires_nous_auth + override_env_vars).
         #     Uses the fal plugin as the underlying backend but has a
         #     distinct setup UX.
         # Mirrors the shape browser/video_gen ship today.
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "Managed gateway",
                 "badge": "subscription",
                 "tag": "Managed FAL image generation billed to your subscription",
                 "env_vars": [],
                 "requires_nous_auth": True,
-                "managed_nous_feature": "image_gen",
+                "managed_gateway_feature": "image_gen",
                 "override_env_vars": ["FAL_KEY"],
                 "imagegen_backend": "fal",
             },
@@ -386,21 +415,21 @@ TOOL_CATEGORIES = {
     "video_gen": {
         "name": "Video Generation",
         "icon": "🎬",
-        # "Nous Subscription" row mirrors the image_gen pattern — managed
-        # FAL video generation billed via the Nous Portal.  Plugin-backed
+        # "Managed gateway" row mirrors the image_gen pattern — managed
+        # FAL video generation billed via the managed gateway.  Plugin-backed
         # provider rows (FAL BYOK, xAI, …) are injected at runtime by
         # ``_plugin_video_gen_providers()`` in ``_visible_providers``.
         "providers": [
             {
-                "name": "Nous Subscription",
+                "name": "Managed gateway",
                 "badge": "subscription",
                 "tag": "Managed FAL video generation billed to your subscription",
                 "env_vars": [],
                 "requires_nous_auth": True,
-                "managed_nous_feature": "video_gen",
+                "managed_gateway_feature": "video_gen",
                 "override_env_vars": ["FAL_KEY"],
                 # The underlying plugin backend — when the user picks
-                # "Nous Subscription" we set video_gen.provider = "fal"
+                # "Managed gateway" we set video_gen.provider = "fal"
                 # and video_gen.use_gateway = True so the FAL plugin
                 # routes through the managed queue gateway.
                 "video_gen_plugin_name": "fal",
@@ -449,10 +478,10 @@ TOOL_CATEGORIES = {
         # non-provider UX setup-flow rows remain here. "Local Browser" is
         # listed FIRST so it is the default-highlighted (index 0) choice on a
         # fresh install — pressing Enter must land on the free, no-key local
-        # backend, never on the paid Nous Subscription gateway row:
+        # backend, never on the paid Managed gateway gateway row:
         #   - "Local Browser" — non-cloud option, no CloudBrowserProvider.
-        #   - "Nous Subscription (Browser Use cloud)" — managed Browser Use
-        #     billed via Nous subscription (requires_nous_auth +
+        #   - "Managed gateway (Browser Use cloud)" — managed Browser Use
+        #     billed via managed gateway (requires_nous_auth +
         #     override_env_vars). Uses the browser-use plugin as the
         #     underlying backend but has a distinct setup UX.
         #   - "Camofox" — anti-detection local Firefox; short-circuits the
@@ -467,13 +496,13 @@ TOOL_CATEGORIES = {
                 "post_setup": "agent_browser",
             },
             {
-                "name": "Nous Subscription (Browser Use cloud)",
+                "name": "Managed gateway (Browser Use cloud)",
                 "badge": "subscription",
                 "tag": "Managed Browser Use billed to your subscription",
                 "env_vars": [],
                 "browser_provider": "browser-use",
                 "requires_nous_auth": True,
-                "managed_nous_feature": "browser",
+                "managed_gateway_feature": "browser",
                 "override_env_vars": ["BROWSER_USE_API_KEY"],
                 "post_setup": "agent_browser",
             },
@@ -894,7 +923,7 @@ def _run_post_setup(post_setup_key: str):
                 "    Pull the latest image to get the bundled Chromium:"
             )
             _print_info(
-                "      docker pull ghcr.io/nousresearch/arcen-agent:latest"
+                "      docker pull ghcr.io/arcenpay/arcen-agent:latest"
             )
             return
 
@@ -1792,7 +1821,7 @@ def _plugin_video_gen_providers() -> list[dict]:
 # PR #25182 — this helper is the sole source of truth for the category's
 # provider rows. The hardcoded entries that used to drive the category
 # were deleted in the same PR; only the two non-provider UX rows
-# ("Nous Subscription" managed-gateway entry, "Firecrawl Self-Hosted")
+# ("Managed gateway" managed-gateway entry, "Firecrawl Self-Hosted")
 # remain in TOOL_CATEGORIES because they describe alternative *setup
 # flows* for the firecrawl backend rather than distinct providers.
 def _plugin_web_search_providers() -> list[dict]:
@@ -1849,7 +1878,7 @@ def _plugin_web_search_providers() -> list[dict]:
 # for those three in the "Browser Automation" picker. The hardcoded
 # ``TOOL_CATEGORIES["browser"]`` entries that drove the category before
 # were deleted in the same PR; only non-provider UX setup-flow rows remain
-# ("Nous Subscription", "Local Browser", "Camofox") — see the comment block
+# ("Managed gateway", "Local Browser", "Camofox") — see the comment block
 # in ``TOOL_CATEGORIES["browser"]`` for why each one stays hardcoded.
 def _plugin_browser_providers() -> list[dict]:
     """Build picker-row dicts from plugin-registered cloud browser providers.
@@ -1962,9 +1991,9 @@ def _visible_providers(
 ) -> list[dict]:
     """Return provider entries visible for the current auth/config state.
 
-    Nous-managed Tool Gateway rows (``managed_nous_feature``) are always
+    Managed gateway Tool Gateway rows (``managed_gateway_feature``) are always
     shown — even to logged-out / unentitled users — so the picker advertises
-    that the capability exists.  Selecting one drives an inline Nous Portal
+    that the capability exists.  Selecting one drives an inline managed gateway
     login + entitlement check (see ``_configure_provider``); the row only
     *activates* the gateway once paid access is confirmed.
     """
@@ -1983,13 +2012,13 @@ def _visible_providers(
     )
     visible = []
     for provider in cat.get("providers", []):
-        # Nous-managed Tool Gateway rows stay visible regardless of auth —
-        # selecting one drives an inline Portal login. A `requires_nous_auth`
-        # row that is NOT a managed gateway feature (pure pre-auth UX) is
-        # still hidden until the user is logged in.
+        if provider.get("managed_gateway_feature"):
+            continue
+        # A `requires_nous_auth` row that is NOT a managed gateway feature
+        # (pure pre-auth UX) is still hidden until the user is logged in.
         if (
             provider.get("requires_nous_auth")
-            and not provider.get("managed_nous_feature")
+            and not provider.get("managed_gateway_feature")
             and not features.nous_auth_present
         ):
             continue
@@ -1997,14 +2026,14 @@ def _visible_providers(
         # pool doesn't cover video, so showing it would only lead to a denial.
         if (
             pool_only
-            and provider.get("managed_nous_feature") == "video_gen"
+            and provider.get("managed_gateway_feature") == "video_gen"
             and not (acct and acct.tool_gateway_entitled_for("fal-video"))
         ):
             continue
         visible.append(provider)
 
     # Inject plugin-registered image_gen backends (OpenAI today, more
-    # later) so the picker lists them alongside FAL / Nous Subscription.
+    # later) so the picker lists them alongside FAL / Managed gateway.
     if cat.get("name") == "Image Generation":
         visible.extend(_plugin_image_gen_providers())
 
@@ -2016,14 +2045,14 @@ def _visible_providers(
     # Inject plugin-registered web search backends. After PR #25182, this
     # is the SOLE source of provider rows for the Web Search & Extract
     # category — the per-provider hardcoded entries were deleted. The two
-    # remaining hardcoded rows ("Nous Subscription", "Firecrawl
+    # remaining hardcoded rows ("Managed gateway", "Firecrawl
     # Self-Hosted") are non-provider UX setup-flow rows for firecrawl.
     if cat.get("name") == "Web Search & Extract":
         visible.extend(_plugin_web_search_providers())
 
     # Inject plugin-registered cloud browser backends. After PR #25214,
     # Browserbase / Browser Use / Firecrawl are the plugin-supplied rows;
-    # the hardcoded "Nous Subscription" / "Local Browser" / "Camofox" rows
+    # the hardcoded "Managed gateway" / "Local Browser" / "Camofox" rows
     # stay because they're non-provider UX setup flows (subscription auth,
     # local fallback, and the REST-API anti-detection backend respectively).
     if cat.get("name") == "Browser Automation":
@@ -2045,10 +2074,10 @@ def _hidden_nous_gateway_message(
     *,
     force_fresh: bool = False,
 ) -> str:
-    """Deprecated: Nous Tool Gateway rows are no longer hidden.
+    """Deprecated: Managed Tool Gateway rows are no longer hidden.
 
     Previously this returned a "log in / upgrade" banner shown above a
-    category when its Nous-managed rows were filtered out for unentitled
+    category when its Managed gateway rows were filtered out for unentitled
     users. Those rows are now always listed (see ``_visible_providers``), and
     the login + entitlement guidance happens inline when the user selects one
     (``ensure_nous_portal_access``). Kept as a no-op so call sites stay simple;
@@ -2171,7 +2200,7 @@ def _configure_tool_category(
     hidden_nous_message = _hidden_nous_gateway_message(
         cat,
         config,
-        f"the Nous Subscription provider for {name}",
+        f"the Managed gateway provider for {name}",
         force_fresh=force_fresh,
     )
 
@@ -2238,17 +2267,17 @@ def _configure_tool_category(
                     configured = ""
                 else:
                     configured = " [configured]"
-            # Mark Nous-managed entries. Logged-in paid subscribers get the
-            # "included" star; everyone else gets a "via Nous Portal" hint so
+            # Mark Managed gateway entries. Logged-in paid subscribers get the
+            # "included" star; everyone else gets a "via managed gateway" hint so
             # it's clear selecting the row triggers a Portal login. The rows
             # are always shown now (see _visible_providers) — selecting one
             # drives an inline login + entitlement check.
             sub_marker = ""
-            if p.get("managed_nous_feature"):
+            if p.get("managed_gateway_feature"):
                 if _nous_logged_in:
-                    sub_marker = "  ★ Included with your Nous subscription"
+                    sub_marker = "  ★ Included with your managed gateway"
                 else:
-                    sub_marker = "  ★ via Nous Portal (login on select)"
+                    sub_marker = "  ★ via managed gateway (login on select)"
             provider_choices.append(f"{p['name']}{badge}{tag}{configured}{sub_marker}")
 
         # Add skip option
@@ -2284,11 +2313,11 @@ def _is_provider_active(
         return isinstance(image_cfg, dict) and image_cfg.get("provider") == plugin_name
 
     video_plugin_name = provider.get("video_gen_plugin_name")
-    if video_plugin_name and not provider.get("managed_nous_feature"):
+    if video_plugin_name and not provider.get("managed_gateway_feature"):
         video_cfg = config.get("video_gen", {})
         return isinstance(video_cfg, dict) and video_cfg.get("provider") == video_plugin_name
 
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_gateway_feature")
     if managed_feature:
         features = get_nous_subscription_features(config, force_fresh=force_fresh)
         feature = features.features.get(managed_feature)
@@ -2709,7 +2738,7 @@ def apply_provider_selection(ts_key: str, provider_name: str, config: dict) -> N
     rows the GUI/CLI picker shows via :func:`_visible_providers`) and writes
     the corresponding backend/provider config keys. Unlike
     :func:`_configure_provider`, this does NOT prompt for API keys, run
-    post-setup hooks, gate on Nous Portal auth, or run interactive model
+    post-setup hooks, gate on managed gateway auth, or run interactive model
     pickers — those are handled separately (env endpoints, post-setup
     endpoints, the model picker) in the desktop GUI.
 
@@ -2725,7 +2754,7 @@ def apply_provider_selection(ts_key: str, provider_name: str, config: dict) -> N
     if provider is None:
         raise KeyError(f"Unknown provider {provider_name!r} for toolset {ts_key!r}")
 
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_gateway_feature")
     _write_provider_config(provider, config, managed_feature=managed_feature)
 
     # Plugin-registered image/video gen backends record the provider name in
@@ -2766,27 +2795,13 @@ def _configure_provider(
 ):
     """Configure a single provider - prompt for API keys and set config."""
     env_vars = provider.get("env_vars", [])
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_gateway_feature")
 
-    # Nous-managed Tool Gateway backends are always listed (see
-    # _visible_providers), but only *activate* once the user has paid Nous
-    # Portal access. Selecting one runs an inline Portal login when needed —
-    # auth + entitlement only, no inference-provider switch and no bulk
-    # "enable all tools" prompt (that lives in `arcen model`).
     if managed_feature:
-        from arcen_cli.nous_subscription import (
-            MANAGED_FEATURE_COVERAGE_CATEGORY,
-            ensure_nous_portal_access,
+        _print_warning(
+            "  Not enabled — managed gateway backends are disabled in this Arcen Agent build."
         )
-
-        if not ensure_nous_portal_access(
-            capability=f"{provider.get('name', 'the Nous Tool Gateway')}",
-            coverage_category=MANAGED_FEATURE_COVERAGE_CATEGORY.get(managed_feature),
-        ):
-            _print_warning(
-                "  Not enabled — Nous Portal access is required for this backend."
-            )
-            return
+        return
 
     # Pure pre-auth UX rows (requires_nous_auth without a managed gateway
     # feature) keep the old gate. Managed rows are handled by the inline
@@ -2799,10 +2814,10 @@ def _configure_provider(
         if not features.nous_auth_present or not entitled:
             message = format_nous_portal_entitlement_message(
                 features.account_info,
-                capability=f"{provider.get('name', 'Nous Subscription')}",
+                capability=f"{provider.get('name', 'Managed gateway')}",
             )
             _print_warning(
-                f"  {message or 'Nous Subscription is only available after logging into Nous Portal.'}"
+                f"  {message or 'Managed gateway is only available after logging into managed gateway.'}"
             )
             return
 
@@ -2834,7 +2849,7 @@ def _configure_provider(
             _run_post_setup(provider["post_setup"])
         _print_success(f"  {provider['name']} - no configuration needed!")
         if managed_feature:
-            _print_info("  Requests for this tool will be billed to your Nous subscription.")
+            _print_info("  Requests for this tool will be billed to your managed gateway.")
         # Plugin-registered image_gen provider: write image_gen.provider
         # and route model selection to the plugin's own catalog.
         plugin_name = provider.get("image_gen_plugin_name")
@@ -2862,7 +2877,7 @@ def _configure_provider(
     # Prompt for each required env var
     all_configured = True
     # If this BYOK provider lives in a category that ALSO has a
-    # Nous-managed sibling, show a single dim hint so users know
+    # Managed gateway sibling, show a single dim hint so users know
     # they can avoid the key entirely via a Portal subscription.
     # Suppressed when the user is already authed to Nous.
     _show_portal_hint = False
@@ -2872,7 +2887,7 @@ def _configure_provider(
             for _cat_key, _cat in TOOL_CATEGORIES.items():
                 _providers = _cat.get("providers", [])
                 if provider in _providers and any(
-                    sib.get("managed_nous_feature") for sib in _providers
+                    sib.get("managed_gateway_feature") for sib in _providers
                 ):
                     _has_managed_sibling = True
                     break
@@ -2886,7 +2901,7 @@ def _configure_provider(
             _show_portal_hint = False
 
     if _show_portal_hint:
-        _print_info("  Available through Nous Portal subscription.")
+        _print_info("  Available through managed gateway subscription.")
 
     for var in env_vars:
         existing = get_env_value(var["key"])
@@ -3080,7 +3095,7 @@ def _configure_tool_category_for_reconfig(
     hidden_nous_message = _hidden_nous_gateway_message(
         cat,
         config,
-        f"the Nous Subscription provider for {name}",
+        f"the Managed gateway provider for {name}",
         force_fresh=force_fresh,
     )
 
@@ -3137,24 +3152,13 @@ def _reconfigure_provider(
 ):
     """Reconfigure a provider - update API keys."""
     env_vars = provider.get("env_vars", [])
-    managed_feature = provider.get("managed_nous_feature")
+    managed_feature = provider.get("managed_gateway_feature")
 
-    # Same inline Nous Portal login + entitlement gate as _configure_provider:
-    # managed Tool Gateway backends only activate with paid Portal access.
     if managed_feature:
-        from arcen_cli.nous_subscription import (
-            MANAGED_FEATURE_COVERAGE_CATEGORY,
-            ensure_nous_portal_access,
+        _print_warning(
+            "  Not enabled — managed gateway backends are disabled in this Arcen Agent build."
         )
-
-        if not ensure_nous_portal_access(
-            capability=f"{provider.get('name', 'the Nous Tool Gateway')}",
-            coverage_category=MANAGED_FEATURE_COVERAGE_CATEGORY.get(managed_feature),
-        ):
-            _print_warning(
-                "  Not enabled — Nous Portal access is required for this backend."
-            )
-            return
+        return
 
     # Pure pre-auth UX rows keep the old gate; managed rows already handled
     # by the inline login above.
@@ -3166,10 +3170,10 @@ def _reconfigure_provider(
         if not features.nous_auth_present or not entitled:
             message = format_nous_portal_entitlement_message(
                 features.account_info,
-                capability=f"{provider.get('name', 'Nous Subscription')}",
+                capability=f"{provider.get('name', 'Managed gateway')}",
             )
             _print_warning(
-                f"  {message or 'Nous Subscription is only available after logging into Nous Portal.'}"
+                f"  {message or 'Managed gateway is only available after logging into managed gateway.'}"
             )
             return
 
@@ -3216,7 +3220,7 @@ def _reconfigure_provider(
             _run_post_setup(provider["post_setup"])
         _print_success(f"  {provider['name']} - no configuration needed!")
         if managed_feature:
-            _print_info("  Requests for this tool will be billed to your Nous subscription.")
+            _print_info("  Requests for this tool will be billed to your managed gateway.")
         plugin_name = provider.get("image_gen_plugin_name")
         if plugin_name:
             _select_plugin_image_gen_provider(plugin_name, config)
@@ -3382,7 +3386,7 @@ def tools_command(args=None, first_install: bool = False, config: dict = None):
             )
             for ts_key in sorted(auto_configured):
                 label = next((l for k, l, _ in CONFIGURABLE_TOOLSETS if k == ts_key), ts_key)
-                print(color(f"  ✓ {label}: using your Nous subscription defaults", Colors.GREEN))
+                print(color(f"  ✓ {label}: using your managed gateway defaults", Colors.GREEN))
 
             # Walk through ALL selected tools that have provider options or
             # need API keys.  This ensures browser (Local vs Browserbase),

@@ -150,43 +150,6 @@ def _xai_curated_models() -> list[str]:
 
 
 _PROVIDER_MODELS: dict[str, list[str]] = {
-    "nous": [
-        # Anthropic
-        "anthropic/claude-opus-4.8",
-        "anthropic/claude-sonnet-4.6",
-        "anthropic/claude-haiku-4.5",
-        # OpenAI
-        "openai/gpt-5.5",
-        "openai/gpt-5.5-pro",
-        "openai/gpt-5.4-mini",
-        # Google
-        "google/gemini-3-pro-preview",
-        "google/gemini-3.1-pro-preview",
-        "google/gemini-3.5-flash",
-        # xAI
-        "x-ai/grok-4.3",
-        # DeepSeek
-        "deepseek/deepseek-v4-pro",
-        "deepseek/deepseek-v4-flash",
-        # Qwen
-        "qwen/qwen3.7-max",
-        "qwen/qwen3.7-plus",
-        "qwen/qwen3.6-35b-a3b",
-        # MoonshotAI
-        "moonshotai/kimi-k2.6",
-        # MiniMax
-        "minimax/minimax-m3",
-        # Z-AI
-        "z-ai/glm-5.1",
-        # Xiaomi
-        "xiaomi/mimo-v2.5-pro",
-        # Tencent
-        "tencent/hy3-preview",
-        # StepFun
-        "stepfun/step-3.7-flash",
-        # NVIDIA
-        "nvidia/nemotron-3-super-120b-a12b",
-    ],
     # Native OpenAI Chat Completions (api.openai.com). Used by /model counts and
     # provider_model_ids fallback when /v1/models is unavailable.
     "openai": [
@@ -492,9 +455,9 @@ _PROVIDER_MODELS: dict[str, list[str]] = {
 }
 
 # ---------------------------------------------------------------------------
-# Nous Portal free-model helper
+# Removed provider Portal free-model helper
 # ---------------------------------------------------------------------------
-# The Nous Portal models endpoint is the source of truth for which models
+# The Removed provider Portal models endpoint is the source of truth for which models
 # are currently offered (free or paid). We trust whatever it returns and
 # surface it to users as-is — no local allowlist filtering.
 
@@ -511,9 +474,9 @@ def _is_model_free(model_id: str, pricing: dict[str, dict[str, str]]) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Nous Portal account tier detection
+# Removed provider Portal account tier detection
 # ---------------------------------------------------------------------------
-def is_nous_free_tier(account_info: dict[str, Any]) -> bool:
+def is_removed_provider_free_tier(account_info: dict[str, Any]) -> bool:
     """Return True if the account info indicates a free (unpaid) tier.
 
     Prefer the Portal's explicit ``paid_service_access.allowed`` entitlement
@@ -541,12 +504,12 @@ def is_nous_free_tier(account_info: dict[str, Any]) -> bool:
         return False
 
 
-def partition_nous_models_by_tier(
+def partition_removed_provider_models_by_tier(
     model_ids: list[str],
     pricing: dict[str, dict[str, str]],
     free_tier: bool,
 ) -> tuple[list[str], list[str]]:
-    """Split Nous models into (selectable, unavailable) based on user tier.
+    """Split Removed provider models into (selectable, unavailable) based on user tier.
 
     For paid-tier users: all models are selectable, none unavailable.
 
@@ -578,9 +541,9 @@ def union_with_portal_free_recommendations(
 ) -> tuple[list[str], dict[str, dict[str, str]]]:
     """Augment curated list + pricing with the Portal's ``freeRecommendedModels``.
 
-    The Portal's ``/api/nous/recommended-models`` endpoint advertises which
+    The Portal's ``/api/removed_provider/recommended-models`` endpoint advertises which
     models are free *right now* — independent of what the in-repo
-    ``_PROVIDER_MODELS["nous"]`` list happens to contain or whether the
+    ``_PROVIDER_MODELS["removed_provider"]`` list happens to contain or whether the
     docs-hosted catalog manifest has been rebuilt since the last release.
 
     For free-tier users this is the source of truth: any model the Portal
@@ -594,13 +557,13 @@ def union_with_portal_free_recommendations(
       show first and Portal-only picks follow).
     * ``pricing`` gets a synthetic ``{"prompt": "0", "completion": "0"}``
       entry for any free recommendation missing from the live pricing
-      map, so :func:`partition_nous_models_by_tier` keeps it.
+      map, so :func:`partition_removed_provider_models_by_tier` keeps it.
 
     Failures (network, parse, missing field) are silent and degrade to
     returning the inputs unchanged.
     """
     try:
-        payload = fetch_nous_recommended_models(
+        payload = fetch_removed_provider_recommended_models(
             portal_base_url, force_refresh=force_refresh
         )
     except Exception:
@@ -645,9 +608,9 @@ def union_with_portal_paid_recommendations(
     """Augment curated list with the Portal's ``paidRecommendedModels``.
 
     Mirror of :func:`union_with_portal_free_recommendations` for paid-tier
-    users. The Portal's ``/api/nous/recommended-models`` endpoint advertises
+    users. The Portal's ``/api/removed_provider/recommended-models`` endpoint advertises
     which paid models are blessed *right now* — independent of what the
-    in-repo ``_PROVIDER_MODELS["nous"]`` list happens to contain or whether
+    in-repo ``_PROVIDER_MODELS["removed_provider"]`` list happens to contain or whether
     the docs-hosted catalog manifest has been rebuilt since the last release.
 
     For paid-tier users this lets newly-launched paid models surface in the
@@ -663,7 +626,7 @@ def union_with_portal_paid_recommendations(
       via :func:`get_pricing_for_provider`; if the live endpoint hasn't
       published pricing yet, the picker shows a blank price column rather
       than fabricating numbers. (The free helper synthesizes ``$0`` so
-      :func:`partition_nous_models_by_tier` keeps free models selectable;
+      :func:`partition_removed_provider_models_by_tier` keeps free models selectable;
       no equivalent gating applies on the paid side, so synthesis would
       only mislead the user.)
 
@@ -672,7 +635,7 @@ def union_with_portal_paid_recommendations(
     Portal-side hiccup.
     """
     try:
-        payload = fetch_nous_recommended_models(
+        payload = fetch_removed_provider_recommended_models(
             portal_base_url, force_refresh=force_refresh
         )
     except Exception:
@@ -709,8 +672,8 @@ _FREE_TIER_CACHE_TTL: int = 180  # seconds (3 minutes)
 _free_tier_cache: tuple[bool, float] | None = None  # (result, timestamp)
 
 
-def check_nous_free_tier(*, force_fresh: bool = False) -> bool:
-    """Check if the current Nous Portal user is on a free (unpaid) tier.
+def check_removed_provider_free_tier(*, force_fresh: bool = False) -> bool:
+    """Check if the current Removed provider Portal user is on a free (unpaid) tier.
 
     Results are cached for ``_FREE_TIER_CACHE_TTL`` seconds to avoid
     hitting the Portal API on every call.  The cache is short-lived so
@@ -727,9 +690,9 @@ def check_nous_free_tier(*, force_fresh: bool = False) -> bool:
             return cached_result
 
     try:
-        from arcen_cli.nous_account import get_nous_portal_account_info
+        from arcen_cli.removed_provider_account import get_removed_provider_portal_account_info
 
-        account_info = get_nous_portal_account_info(force_fresh=force_fresh)
+        account_info = get_removed_provider_portal_account_info(force_fresh=force_fresh)
         result = account_info.is_free_tier
         _free_tier_cache = (result, now)
         return result
@@ -739,7 +702,7 @@ def check_nous_free_tier(*, force_fresh: bool = False) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Nous Portal recommended models
+# Removed provider Portal recommended models
 #
 # The Portal publishes a curated list of suggested models (separated into
 # paid and free tiers) plus dedicated recommendations for compaction (text
@@ -758,38 +721,38 @@ def check_nous_free_tier(*, force_fresh: bool = False) -> bool:
 #   }
 # ---------------------------------------------------------------------------
 
-NOUS_RECOMMENDED_MODELS_PATH = "/api/nous/recommended-models"
-_NOUS_RECOMMENDED_CACHE_TTL: int = 600  # seconds (10 minutes)
+REMOVED_PROVIDER_RECOMMENDED_MODELS_PATH = "/api/removed_provider/recommended-models"
+_REMOVED_PROVIDER_RECOMMENDED_CACHE_TTL: int = 600  # seconds (10 minutes)
 # (result_dict, timestamp) keyed by portal_base_url so staging vs prod don't collide.
-_nous_recommended_cache: dict[str, tuple[dict[str, Any], float]] = {}
+_removed_provider_recommended_cache: dict[str, tuple[dict[str, Any], float]] = {}
 
 
-def fetch_nous_recommended_models(
+def fetch_removed_provider_recommended_models(
     portal_base_url: str = "",
     timeout: float = 5.0,
     *,
     force_refresh: bool = False,
 ) -> dict[str, Any]:
-    """Fetch the Nous Portal's curated recommended-models payload.
+    """Fetch the Removed provider Portal's curated recommended-models payload.
 
-    Hits ``<portal>/api/nous/recommended-models``. The endpoint is public —
+    Hits ``<portal>/api/removed_provider/recommended-models``. The endpoint is public —
     no auth is required. Results are cached per portal URL for
-    ``_NOUS_RECOMMENDED_CACHE_TTL`` seconds; pass ``force_refresh=True`` to
+    ``_REMOVED_PROVIDER_RECOMMENDED_CACHE_TTL`` seconds; pass ``force_refresh=True`` to
     bypass the cache.
 
     Returns the parsed JSON dict on success, or ``{}`` on any failure
     (network, parse, non-2xx). Callers must treat missing/null fields as
     "no recommendation" and fall back to their own default.
     """
-    base = (portal_base_url or "https://portal.nousresearch.com").rstrip("/")
+    base = (portal_base_url or "https://").rstrip("/")
     now = time.monotonic()
-    cached = _nous_recommended_cache.get(base)
+    cached = _removed_provider_recommended_cache.get(base)
     if not force_refresh and cached is not None:
         payload, cached_at = cached
-        if now - cached_at < _NOUS_RECOMMENDED_CACHE_TTL:
+        if now - cached_at < _REMOVED_PROVIDER_RECOMMENDED_CACHE_TTL:
             return payload
 
-    url = f"{base}{NOUS_RECOMMENDED_MODELS_PATH}"
+    url = f"{base}{REMOVED_PROVIDER_RECOMMENDED_MODELS_PATH}"
     try:
         req = urllib.request.Request(
             url,
@@ -802,24 +765,24 @@ def fetch_nous_recommended_models(
     except Exception:
         data = {}
 
-    _nous_recommended_cache[base] = (data, now)
+    _removed_provider_recommended_cache[base] = (data, now)
     return data
 
 
-def _resolve_nous_portal_url() -> str:
+def _resolve_removed_provider_portal_url() -> str:
     """Best-effort lookup of the Portal base URL the user is authed against."""
     try:
         from arcen_cli.auth import (
-            DEFAULT_NOUS_PORTAL_URL,
+            DEFAULT_REMOVED_PROVIDER_PORTAL_URL,
             get_provider_auth_state,
         )
-        state = get_provider_auth_state("nous") or {}
+        state = get_provider_auth_state("removed_provider") or {}
         portal = str(state.get("portal_base_url") or "").strip()
         if portal:
             return portal.rstrip("/")
-        return str(DEFAULT_NOUS_PORTAL_URL).rstrip("/")
+        return str(DEFAULT_REMOVED_PROVIDER_PORTAL_URL).rstrip("/")
     except Exception:
-        return "https://portal.nousresearch.com"
+        return "https://"
 
 
 def _extract_model_name(entry: Any) -> Optional[str]:
@@ -832,7 +795,7 @@ def _extract_model_name(entry: Any) -> Optional[str]:
     return None
 
 
-def get_nous_recommended_aux_model(
+def get_removed_provider_recommended_aux_model(
     *,
     vision: bool = False,
     free_tier: Optional[bool] = None,
@@ -849,7 +812,7 @@ def get_nous_recommended_aux_model(
                          ``freeRecommendedCompactionModel``
 
     When ``free_tier`` is ``None`` (default) the user's tier is auto-detected
-    via :func:`check_nous_free_tier`. Pass an explicit bool to bypass the
+    via :func:`check_removed_provider_free_tier`. Pass an explicit bool to bypass the
     detection — useful for tests or when the caller already knows the tier.
 
     For paid-tier users we prefer the paid recommendation but gracefully fall
@@ -860,14 +823,14 @@ def get_nous_recommended_aux_model(
     fails — callers should fall back to their own default (currently
     ``google/gemini-3-flash-preview``).
     """
-    base = portal_base_url or _resolve_nous_portal_url()
-    payload = fetch_nous_recommended_models(base, force_refresh=force_refresh)
+    base = portal_base_url or _resolve_removed_provider_portal_url()
+    payload = fetch_removed_provider_recommended_models(base, force_refresh=force_refresh)
     if not payload:
         return None
 
     if free_tier is None:
         try:
-            free_tier = check_nous_free_tier()
+            free_tier = check_removed_provider_free_tier()
         except Exception:
             # On any detection error, assume paid — paid users see both fields
             # anyway so this is a safe default that maximises model quality.
@@ -906,7 +869,6 @@ class ProviderEntry(NamedTuple):
     tui_desc: str   # detailed description for `arcen model` TUI
 
 CANONICAL_PROVIDERS: list[ProviderEntry] = [
-    ProviderEntry("nous",           "Nous Portal",              "Nous Portal (Everything your agent needs, 300+ models with bundled tool use)"),
     ProviderEntry("openrouter",     "OpenRouter",               "OpenRouter (Pay-per-use API aggregator)"),
     ProviderEntry("novita",         "NovitaAI",                 "NovitaAI (Cloud: Model API, Agent Sandbox, GPU Cloud)"),
     ProviderEntry("lmstudio",       "LM Studio",                "LM Studio (Local desktop app with built-in model server)"),
@@ -1152,22 +1114,7 @@ _PROVIDER_ALIASES = {
 
 # Cost-safe overrides for the *silent* auto-default
 # (``get_default_model_for_provider``). Most providers' curated lists lead with a
-# sensible default, but Nous Portal is a per-token *metered aggregator* whose
-# list is ordered best-/most-capable-first — entry [0] is the priciest flagship
-# (``anthropic/claude-opus-4.8``, $5/$25 per Mtok). Using that as the
-# non-interactive fallback when a profile sets ``provider: nous`` with no model
-# silently bills the most expensive model for traffic the user never opted into
-# (a missing default escalated to Opus and billed 863 requests before the user
-# noticed). Pin the silent default to a low-cost curated model instead so a
-# missing model can never escalate to the flagship.
-#
-# This is deliberately a fixed, side-effect-free default for the hot resolution
-# path. The *interactive* default (``arcen model``) uses the richer
-# free/paid-tier-aware resolver — see ``partition_nous_models_by_tier`` — which
-# can hit the Portal; this fallback must stay cheap and network-free.
-_PROVIDER_SILENT_DEFAULT_OVERRIDES: dict[str, str] = {
-    "nous": "deepseek/deepseek-v4-flash",
-}
+_PROVIDER_SILENT_DEFAULT_OVERRIDES: dict[str, str] = {}
 
 
 def get_default_model_for_provider(provider: str) -> str:
@@ -1211,7 +1158,7 @@ def _openrouter_model_supports_tools(item: Any) -> bool:
     be driven by the agent loop and would fail at the first tool call.
 
     **Permissive when the field is missing.** Some OpenRouter-compatible gateways
-    (Nous Portal, private mirrors, older catalog snapshots) don't populate
+    (Removed provider Portal, private mirrors, older catalog snapshots) don't populate
     ``supported_parameters`` at all. Treat that as "unknown capability → allow"
     so the picker doesn't silently empty for those users. Only hide models
     whose ``supported_parameters`` is an explicit list that omits ``tools``.
@@ -1300,22 +1247,22 @@ def model_ids(*, force_refresh: bool = False) -> list[str]:
     return [mid for mid, _ in fetch_openrouter_models(force_refresh=force_refresh)]
 
 
-def get_curated_nous_model_ids() -> list[str]:
-    """Return the curated Nous Portal model-id list.
+def get_curated_removed_provider_model_ids() -> list[str]:
+    """Return the curated Removed provider Portal model-id list.
 
     Prefers the remotely-hosted catalog manifest (published under
     ``website/static/api/model-catalog.json``); falls back to the in-repo
-    snapshot in ``_PROVIDER_MODELS["nous"]`` when the manifest is
+    snapshot in ``_PROVIDER_MODELS["removed_provider"]`` when the manifest is
     unreachable. Always returns a list (never None).
     """
     try:
-        from arcen_cli.model_catalog import get_curated_nous_models
-        remote = get_curated_nous_models()
+        from arcen_cli.model_catalog import get_curated_removed_provider_models
+        remote = get_curated_removed_provider_models()
     except Exception:
         remote = None
     if remote:
         return list(remote)
-    return list(_PROVIDER_MODELS.get("nous", []))
+    return list(_PROVIDER_MODELS.get("removed_provider", []))
 
 
 # ---------------------------------------------------------------------------
@@ -1360,7 +1307,7 @@ def fetch_models_with_pricing(
     """Fetch ``/v1/models`` and return ``{model_id: {prompt, completion}}`` pricing.
 
     Results are cached per *base_url* so repeated calls are free.
-    Works with any OpenRouter-compatible endpoint (OpenRouter, Nous Portal).
+    Works with any OpenRouter-compatible endpoint (OpenRouter, Removed provider Portal).
     """
     cache_key = (base_url or "").rstrip("/")
     if not force_refresh and cache_key in _pricing_cache:
@@ -1406,13 +1353,13 @@ def _resolve_openrouter_api_key() -> str:
     return os.getenv("OPENROUTER_API_KEY", "").strip()
 
 
-_DEFAULT_NOUS_INFERENCE_BASE = "https://inference-api.nousresearch.com"
+_DEFAULT_REMOVED_PROVIDER_INFERENCE_BASE = "https://"
 
 
-def _resolve_nous_pricing_credentials() -> tuple[str, str]:
-    """Return ``(api_key, base_url)`` for Nous Portal pricing.
+def _resolve_removed_provider_pricing_credentials() -> tuple[str, str]:
+    """Return ``(api_key, base_url)`` for Removed provider Portal pricing.
 
-    The Nous inference ``/v1/models`` endpoint exposes pricing without
+    The Removed provider inference ``/v1/models`` endpoint exposes pricing without
     authentication, so the api_key is best-effort: when runtime credential
     resolution fails (expired refresh token, missing auth.json, etc.) we
     still return the default inference base URL so the picker keeps
@@ -1422,17 +1369,17 @@ def _resolve_nous_pricing_credentials() -> tuple[str, str]:
     look broken ("No free models currently available").
     """
     try:
-        from arcen_cli.auth import resolve_nous_runtime_credentials
-        creds = resolve_nous_runtime_credentials()
+        from arcen_cli.auth import resolve_removed_provider_runtime_credentials
+        creds = resolve_removed_provider_runtime_credentials()
         if creds:
             return (creds.get("api_key", ""), creds.get("base_url", ""))
     except Exception:
         pass
-    return ("", _DEFAULT_NOUS_INFERENCE_BASE)
+    return ("", _DEFAULT_REMOVED_PROVIDER_INFERENCE_BASE)
 
 
 def get_pricing_for_provider(provider: str, *, force_refresh: bool = False) -> dict[str, dict[str, str]]:
-    """Return live pricing for providers that support it (openrouter, nous, novita)."""
+    """Return live pricing for providers that support it (openrouter, removed_provider, novita)."""
     normalized = normalize_provider(provider)
     if normalized == "openrouter":
         return fetch_models_with_pricing(
@@ -1442,10 +1389,10 @@ def get_pricing_for_provider(provider: str, *, force_refresh: bool = False) -> d
         )
     if normalized == "novita":
         return _fetch_novita_pricing(force_refresh=force_refresh)
-    if normalized == "nous":
-        api_key, base_url = _resolve_nous_pricing_credentials()
+    if normalized == "removed_provider":
+        api_key, base_url = _resolve_removed_provider_pricing_credentials()
         if base_url:
-            # Nous base_url typically looks like https://inference-api.nousresearch.com/v1
+            # Removed provider base_url typically looks like https:///v1
             # We need the part before /v1 for our fetch function
             stripped = base_url.rstrip("/")
             if stripped.endswith("/v1"):
@@ -1574,7 +1521,7 @@ def parse_model_input(raw: str, current_provider: str) -> tuple[str, str]:
     Supports ``provider:model`` syntax to switch providers at runtime::
 
         openrouter:anthropic/claude-sonnet-4.5  →  ("openrouter", "anthropic/claude-sonnet-4.5")
-        nous:arcen-3                           →  ("nous", "arcen-3")
+        removed_provider:arcen-3                           →  ("removed_provider", "arcen-3")
         anthropic/claude-sonnet-4.5             →  (current_provider, "anthropic/claude-sonnet-4.5")
         gpt-5.4                                 →  (current_provider, "gpt-5.4")
 
@@ -1632,7 +1579,7 @@ def curated_models_for_provider(
     if normalized == "openrouter":
         return fetch_openrouter_models(force_refresh=force_refresh)
 
-    # Try live API first (Codex, Nous, etc. all support /models)
+    # Try live API first (Codex, Removed provider, etc. all support /models)
     live = provider_model_ids(normalized)
     if live:
         return [(m, "") for m in live]
@@ -1657,7 +1604,7 @@ def _model_in_provider_catalog(name_lower: str, providers: set[str]) -> bool:
 
 
 _AGGREGATOR_PROVIDERS = frozenset(
-    {"nous", "openrouter", "copilot", "kilocode"}
+    {"removed_provider", "openrouter", "copilot", "kilocode"}
 )
 
 
@@ -1731,7 +1678,7 @@ def detect_static_provider_for_model(
         return alias_match
 
     # --- Step 0: bare provider name typed as model ---
-    # If someone types `/model nous` or `/model anthropic`, treat it as a
+    # If someone types `/model removed_provider` or `/model anthropic`, treat it as a
     # provider switch and pick the first model from that provider's catalog.
     # Skip "custom" and "openrouter" — custom has no model catalog, and
     # openrouter requires an explicit model name to be useful.
@@ -2003,7 +1950,7 @@ def _resolve_copilot_catalog_api_key() -> str:
 # DELIBERATELY EXCLUDED:
 #   - "openrouter": curated list is already a hand-picked agentic subset of
 #     OpenRouter's 400+ catalog. Blindly merging would dump everything.
-#   - "nous": curated list and Portal /models endpoint are the source of
+#   - "removed_provider": curated list and Portal /models endpoint are the source of
 #     truth for the subscription tier.
 # Also excluded: providers that already have dedicated live-endpoint
 # branches below (copilot, anthropic, ollama-cloud, custom,
@@ -2067,7 +2014,7 @@ def _merge_with_models_dev(provider: str, curated: list[str]) -> list[str]:
 def provider_model_ids(provider: Optional[str], *, force_refresh: bool = False) -> list[str]:
     """Return the best known model catalog for a provider.
 
-    Tries live API endpoints for providers that support them (Codex, Nous),
+    Tries live API endpoints for providers that support them (Codex, Removed provider),
     falling back to static lists. For providers in ``_MODELS_DEV_PREFERRED``
     (opencode-go/zen, xiaomi, deepseek, smaller inference providers, etc.),
     models.dev entries are merged on top of curated so new models released
@@ -2103,21 +2050,21 @@ def provider_model_ids(provider: Optional[str], *, force_refresh: bool = False) 
             pass
         if normalized == "copilot-acp":
             return list(_PROVIDER_MODELS.get("copilot", []))
-    if normalized == "nous":
-        # Try live Nous Portal /models endpoint
+    if normalized == "removed_provider":
+        # Try live Removed provider Portal /models endpoint
         try:
-            from arcen_cli.auth import fetch_nous_models, resolve_nous_runtime_credentials
-            creds = resolve_nous_runtime_credentials()
+            from arcen_cli.auth import fetch_removed_provider_models, resolve_removed_provider_runtime_credentials
+            creds = resolve_removed_provider_runtime_credentials()
             if creds:
-                live = fetch_nous_models(api_key=creds.get("api_key", ""), inference_base_url=creds.get("base_url", ""))
+                live = fetch_removed_provider_models(api_key=creds.get("api_key", ""), inference_base_url=creds.get("base_url", ""))
                 if live:
                     return live
         except Exception:
             pass
         # Live failed (or no creds). Fall back to the docs-hosted manifest
-        # — NOT the in-repo _PROVIDER_MODELS["nous"] snapshot — so newly
+        # — NOT the in-repo _PROVIDER_MODELS["removed_provider"] snapshot — so newly
         # added Portal models still surface without an Arcen release.
-        manifest_ids = get_curated_nous_model_ids()
+        manifest_ids = get_curated_removed_provider_model_ids()
         if manifest_ids:
             return manifest_ids
     if normalized == "stepfun":
@@ -2282,7 +2229,7 @@ def _credential_fingerprint(provider: str) -> str:
     Rotating any of the relevant env vars invalidates the cached entry
     for that provider. We hash AT LEAST the api-key + base-url env vars
     declared in ``PROVIDER_REGISTRY``. For OAuth-backed providers
-    (codex, copilot, anthropic-via-claude-code, nous portal), the
+    (codex, copilot, anthropic-via-claude-code, removed_provider portal), the
     relevant tokens live in ``$ARCEN_HOME/auth.json`` and external
     credential files. Rather than parse every shape, we additionally
     fold the mtime of those files into the fingerprint so refreshes

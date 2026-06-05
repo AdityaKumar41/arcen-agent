@@ -2882,8 +2882,8 @@ def _build_compact_banner() -> str:
     dim_color = _skin.get_color("banner_dim", "#B8860B") if _skin else "#B8860B"
 
     if skin_name == "default":
-        line1 = "⚕ NOUS ARCEN - AI Agent Framework"
-        tiny_line = "⚕ NOUS ARCEN"
+        line1 = "⚕ ARCEN AGENT - AI Agent Framework"
+        tiny_line = "⚕ ARCEN"
     else:
         agent_name = _skin.get_branding("agent_name", "Arcen Agent") if _skin else "Arcen Agent"
         line1 = f"{agent_name} - AI Agent Framework"
@@ -3097,7 +3097,7 @@ class ArcenCLI:
         Args:
             model: Model to use (default: from env or claude-sonnet)
             toolsets: List of toolsets to enable (default: all)
-            provider: Inference provider ("auto", "openrouter", "nous", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
+            provider: Inference provider ("auto", "openrouter", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
             api_key: API key (default: from environment)
             base_url: API base URL (default: OpenRouter)
             max_turns: Maximum tool-calling iterations shared with subagents (default: 90)
@@ -5340,11 +5340,11 @@ class ArcenCLI:
                     "[dim]   Fix: Set model.context_length in config.yaml, or increase your server's context setting[/]"
                 )
 
-        # Warn if the configured model is a Nous Arcen LLM (not agentic)
-        from arcen_cli.model_switch import is_nous_arcen_non_agentic
+        # Warn if the configured model is a Arcen LLM (not agentic)
+        from arcen_cli.model_switch import is_arcen_non_agentic_model
 
         model_name = getattr(self, "model", "") or ""
-        if is_nous_arcen_non_agentic(model_name):
+        if is_arcen_non_agentic_model(model_name):
             self._console_print()
             self._console_print(
                 "[bold yellow]⚠  ArcenPay Arcen 3 & 4 models are NOT agentic and are not "
@@ -7901,7 +7901,7 @@ class ArcenCLI:
         _cprint(f"    Provider: {provider_label}")
 
         # Context: always resolve via the provider-aware chain so Codex OAuth,
-        # Copilot, and Nous-enforced caps win over the raw models.dev entry
+        # Copilot, and provider-enforced caps win over the raw models.dev entry
         # (e.g. gpt-5.5 is 1.05M on openai but 272K on Codex OAuth).
         mi = result.model_info
         try:
@@ -8148,7 +8148,7 @@ class ArcenCLI:
         _cprint(f"    Provider: {provider_label}")
 
         # Context: always resolve via the provider-aware chain so Codex OAuth,
-        # Copilot, and Nous-enforced caps win over the raw models.dev entry
+        # Copilot, and provider-enforced caps win over the raw models.dev entry
         # (e.g. gpt-5.5 is 1.05M on openai but 272K on Codex OAuth).
         mi = result.model_info
         from arcen_cli.model_switch import resolve_display_context_length
@@ -15631,7 +15631,7 @@ def main(
         toolsets: Comma-separated list of toolsets to enable (e.g., "web,terminal")
         skills: Comma-separated or repeated list of skills to preload for the session
         model: Model to use (default: anthropic/claude-opus-4-20250514)
-        provider: Inference provider ("auto", "openrouter", "nous", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
+        provider: Inference provider ("auto", "openrouter", "openai-codex", "zai", "kimi-coding", "minimax", "minimax-cn")
         api_key: API key for authentication
         base_url: Base URL for the API
         max_turns: Maximum tool-calling iterations (default: 60)

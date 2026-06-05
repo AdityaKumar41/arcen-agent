@@ -2,19 +2,18 @@
   <img src="assets/banner.png" alt="Arcen Agent" width="100%">
 </p>
 
-# Arcen Agent ☤
+# Arcen Agent
 
 <p align="center">
-  <a href="https://arcen-agent.arcenpay.com/docs/"><img src="https://img.shields.io/badge/Docs-arcen--agent.arcenpay.com-FFD700?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://arcenpay.com"><img src="https://img.shields.io/badge/Team-ArcenPay-blueviolet?style=for-the-badge" alt="ArcenPay"></a>
-  <a href="https://github.com/arcenpay/arcen-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://arcenpay.com"><img src="https://img.shields.io/badge/Built%20by-ArcenPay-blueviolet?style=for-the-badge" alt="Built by ArcenPay"></a>
-  <a href="README.zh-CN.md"><img src="https://img.shields.io/badge/Lang-中文-red?style=for-the-badge" alt="中文"></a>
+<a href="https://arcenpay.com"><img src="https://img.shields.io/badge/Team-ArcenPay-blueviolet?style=for-the-badge" alt="ArcenPay"></a>
+<a href="https://github.com/arcenpay/arcen-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+<a href="https://arcenpay.com"><img src="https://img.shields.io/badge/Built%20by-ArcenPay-blueviolet?style=for-the-badge" alt="Built by ArcenPay"></a>
+
 </p>
 
 **The self-improving AI agent built by [ArcenPay](https://arcenpay.com).** It's the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions. Run it on a $5 VPS, a GPU cluster, or serverless infrastructure that costs nearly nothing when idle. It's not tied to your laptop — talk to it from Telegram while it works on a cloud VM.
 
-Use any model you want — [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai) (200+ models), [NovitaAI](https://novita.ai) (AI-native cloud for Model API, Agent Sandbox, and GPU Cloud), [NVIDIA NIM](https://build.nvidia.com) (Nemotron), [Xiaomi MiMo](https://platform.xiaomimimo.com), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), [Hugging Face](https://huggingface.co), OpenAI, or your own endpoint. Switch with `arcen model` — no code changes, no lock-in.
+Use any model you want — [OpenRouter](https://openrouter.ai) (200+ models), [NovitaAI](https://novita.ai) (AI-native cloud for Model API, Agent Sandbox, and GPU Cloud), [NVIDIA NIM](https://build.nvidia.com) (Nemotron), [Xiaomi MiMo](https://platform.xiaomimimo.com), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), [Hugging Face](https://huggingface.co), OpenAI, Anthropic, local LM Studio/Ollama, or your own OpenAI-compatible endpoint. Switch with `arcen model` — no code changes, no lock-in.
 
 <table>
 <tr><td><b>A real terminal interface</b></td><td>Full TUI with multiline editing, slash-command autocomplete, conversation history, interrupt-and-redirect, and streaming tool output.</td></tr>
@@ -83,17 +82,17 @@ arcen doctor       # Diagnose any issues
 
 Arcen has two entry points: start the terminal UI with `arcen`, or run the gateway and talk to it from Telegram, Discord, Slack, WhatsApp, Signal, or Email. Once you're in a conversation, many slash commands are shared across both interfaces.
 
-| Action                         | CLI                                           | Messaging platforms                                                              |
-| ------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------- |
-| Start chatting                 | `arcen`                                      | Run `arcen gateway setup` + `arcen gateway start`, then send the bot a message |
-| Start fresh conversation       | `/new` or `/reset`                            | `/new` or `/reset`                                                               |
-| Change model                   | `/model [provider:model]`                     | `/model [provider:model]`                                                        |
-| Set a personality              | `/personality [name]`                         | `/personality [name]`                                                            |
-| Retry or undo the last turn    | `/retry`, `/undo`                             | `/retry`, `/undo`                                                                |
-| Compress context / check usage | `/compress`, `/usage`, `/insights [--days N]` | `/compress`, `/usage`, `/insights [days]`                                        |
-| Browse skills                  | `/skills` or `/<skill-name>`                  | `/<skill-name>`                                                                  |
-| Interrupt current work         | `Ctrl+C` or send a new message                | `/stop` or send a new message                                                    |
-| Platform-specific status       | `/platforms`                                  | `/status`, `/sethome`                                                            |
+| Action                         | CLI                                           | Messaging platforms                                                            |
+| ------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------ |
+| Start chatting                 | `arcen`                                       | Run `arcen gateway setup` + `arcen gateway start`, then send the bot a message |
+| Start fresh conversation       | `/new` or `/reset`                            | `/new` or `/reset`                                                             |
+| Change model                   | `/model [provider:model]`                     | `/model [provider:model]`                                                      |
+| Set a personality              | `/personality [name]`                         | `/personality [name]`                                                          |
+| Retry or undo the last turn    | `/retry`, `/undo`                             | `/retry`, `/undo`                                                              |
+| Compress context / check usage | `/compress`, `/usage`, `/insights [--days N]` | `/compress`, `/usage`, `/insights [days]`                                      |
+| Browse skills                  | `/skills` or `/<skill-name>`                  | `/<skill-name>`                                                                |
+| Interrupt current work         | `Ctrl+C` or send a new message                | `/stop` or send a new message                                                  |
+| Platform-specific status       | `/platforms`                                  | `/status`, `/sethome`                                                          |
 
 For the full command lists, see the [CLI guide](https://arcen-agent.arcenpay.com/docs/user-guide/cli) and the [Messaging Gateway guide](https://arcen-agent.arcenpay.com/docs/user-guide/messaging).
 
@@ -103,8 +102,8 @@ For the full command lists, see the [CLI guide](https://arcen-agent.arcenpay.com
 
 All documentation lives at **[arcen-agent.arcenpay.com/docs](https://arcen-agent.arcenpay.com/docs/)**:
 
-| Section                                                                                             | What's Covered                                             |
-| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Section                                                                                        | What's Covered                                             |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | [Quickstart](https://arcen-agent.arcenpay.com/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |
 | [CLI Usage](https://arcen-agent.arcenpay.com/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |
 | [Configuration](https://arcen-agent.arcenpay.com/docs/user-guide/configuration)                | Config file, providers, models, all options                |
