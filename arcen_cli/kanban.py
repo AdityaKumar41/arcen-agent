@@ -201,7 +201,7 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
             "Durable SQLite-backed task board shared across Arcen profiles. "
             "Tasks are claimed atomically, can depend on other tasks, and "
             "are executed by a named profile in an isolated workspace. "
-            "See https://arcen-agent.nousresearch.com/docs/user-guide/features/kanban "
+            "See https://arcen-agent.arcenpay.com/docs/user-guide/features/kanban "
             "or docs/arcen-kanban-v1-spec.pdf for the full design."
         ),
     )

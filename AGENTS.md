@@ -589,7 +589,7 @@ plug into `agent/context_engine.py`; image-gen providers into
 `agent/image_gen_provider.py`. Reference / docs-companion plugins
 (`strike-freedom-cockpit`, `plugin-llm-example`,
 `plugin-llm-async-example`) live in the
-[`arcen-example-plugins`](https://github.com/NousResearch/arcen-example-plugins)
+[`arcen-example-plugins`](https://github.com/arcenpay/arcen-example-plugins)
 companion repo, not in this tree.
 
 ---

@@ -1,7 +1,7 @@
 name: langfuse
 version: "1.0.0"
 description: "Optional Langfuse observability for Arcen — traces conversations, LLM calls, and tool usage. Opt-in via `arcen plugins enable observability/langfuse` or `arcen tools → Langfuse Observability`."
-author: NousResearch
+author: ArcenPay
 requires_env:
   - ARCEN_LANGFUSE_PUBLIC_KEY
   - ARCEN_LANGFUSE_SECRET_KEY

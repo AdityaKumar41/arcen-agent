@@ -40,9 +40,9 @@ nous = NousProfile(
     name="nous",
     aliases=("nous-portal", "nousresearch"),
     env_vars=("NOUS_API_KEY",),
-    display_name="Nous Research",
-    description="Nous Research — Arcen model family",
-    signup_url="https://nousresearch.com/",
+    display_name="ArcenPay",
+    description="ArcenPay — Arcen model family",
+    signup_url="https://arcenpay.com/",
     fallback_models=(
         "arcen-3-405b",
         "arcen-3-70b",

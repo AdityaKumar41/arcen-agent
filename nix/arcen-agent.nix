@@ -221,7 +221,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = with lib; {
     description = "AI agent with advanced tool-calling capabilities";
-    homepage = "https://github.com/NousResearch/arcen-agent";
+    homepage = "https://github.com/arcenpay/arcen-agent";
     mainProgram = "arcen";
     license = licenses.mit;
     platforms = platforms.unix;

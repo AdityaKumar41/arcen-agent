@@ -1,5 +1,5 @@
 {
-  description = "Arcen Agent - AI agent framework by Nous Research";
+  description = "Arcen Agent - AI agent framework by ArcenPay";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

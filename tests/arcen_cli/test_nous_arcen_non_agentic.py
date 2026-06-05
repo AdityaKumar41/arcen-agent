@@ -5,7 +5,7 @@ Prior to this check, the warning fired on any model whose name contained
 local Modelfiles such as ``arcen-brain:qwen3-14b-ctx16k`` — a tool-capable
 Qwen3 wrapper that happens to live under the "arcen" tag namespace.
 
-``is_nous_arcen_non_agentic`` should only match the actual Nous Research
+``is_nous_arcen_non_agentic`` should only match the actual ArcenPay
 Arcen-3 / Arcen-4 chat family.
 """
 
@@ -23,8 +23,8 @@ from arcen_cli.model_switch import (
 @pytest.mark.parametrize(
     "model_name",
     [
-        "NousResearch/Arcen-3-Llama-3.1-70B",
-        "NousResearch/Arcen-3-Llama-3.1-405B",
+        "ArcenPay/Arcen-3-Llama-3.1-70B",
+        "ArcenPay/Arcen-3-Llama-3.1-405B",
         "arcen-3",
         "Arcen-3",
         "arcen-4",
@@ -32,7 +32,7 @@ from arcen_cli.model_switch import (
         "arcen_4_70b",
         "openrouter/arcen3:70b",
         "openrouter/nousresearch/arcen-4-405b",
-        "NousResearch/Arcen3",
+        "ArcenPay/Arcen3",
         "arcen-3.1",
     ],
 )

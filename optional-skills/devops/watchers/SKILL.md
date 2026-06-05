@@ -66,7 +66,7 @@ Watch a GitHub repo (set `GITHUB_TOKEN` in `~/.arcen/.env` to avoid the 60 req/h
 
 ```bash
 python $ARCEN_HOME/skills/devops/watchers/scripts/watch_github.py \
-  --name arcen-issues --repo NousResearch/arcen-agent --scope issues
+  --name arcen-issues --repo arcenpay/arcen-agent --scope issues
 ```
 
 Poll an arbitrary JSON API:

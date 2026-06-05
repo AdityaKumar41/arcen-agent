@@ -149,12 +149,12 @@ arcen webhook subscribe pr-review \
   --deliver github_comment
 ```
 
-Full automation templates gallery: [arcen-agent.nousresearch.com/docs/guides/automation-templates](https://arcen-agent.nousresearch.com/docs/guides/automation-templates)
+Full automation templates gallery: [arcen-agent.arcenpay.com/docs/guides/automation-templates](https://arcen-agent.arcenpay.com/docs/guides/automation-templates)
 
-Documentation: [arcen-agent.nousresearch.com](https://arcen-agent.nousresearch.com)
+Documentation: [arcen-agent.arcenpay.com](https://arcen-agent.arcenpay.com)
 
-GitHub: [github.com/NousResearch/arcen-agent](https://github.com/NousResearch/arcen-agent)
+GitHub: [github.com/arcenpay/arcen-agent](https://github.com/arcenpay/arcen-agent)
 
 ---
 
-*Arcen Agent is built by [Nous Research](https://nousresearch.com). Open source, model-agnostic, runs on your infrastructure.*
+*Arcen Agent is built by [ArcenPay](https://arcenpay.com). Open source, model-agnostic, runs on your infrastructure.*

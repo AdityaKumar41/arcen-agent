@@ -8,7 +8,7 @@ description: >
   running locally.
 platforms: [linux, macos, windows]
 version: 1.0.0
-author: Arcen Agent + Nous Research
+author: Arcen Agent + ArcenPay
 license: MIT
 metadata:
   arcen:

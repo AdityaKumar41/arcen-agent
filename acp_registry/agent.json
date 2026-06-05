@@ -2,10 +2,10 @@
   "id": "arcen-agent",
   "name": "Arcen Agent",
   "version": "0.15.1",
-  "description": "Self-improving open-source AI agent by Nous Research with ACP editor integration, persistent memory, skills, and rich tool support.",
-  "repository": "https://github.com/NousResearch/arcen-agent",
-  "website": "https://arcen-agent.nousresearch.com/docs/user-guide/features/acp",
-  "authors": ["Nous Research"],
+  "description": "Self-improving open-source AI agent by ArcenPay with ACP editor integration, persistent memory, skills, and rich tool support.",
+  "repository": "https://github.com/arcenpay/arcen-agent",
+  "website": "https://arcen-agent.arcenpay.com/docs/user-guide/features/acp",
+  "authors": ["ArcenPay"],
   "license": "MIT",
   "distribution": {
     "uvx": {

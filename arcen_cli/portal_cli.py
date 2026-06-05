@@ -28,7 +28,7 @@ from arcen_cli.config import load_config
 
 DEFAULT_PORTAL_URL = "https://portal.nousresearch.com"
 SUBSCRIPTION_URL = "https://portal.nousresearch.com/manage-subscription"
-DOCS_URL = "https://arcen-agent.nousresearch.com/docs/user-guide/features/tool-gateway"
+DOCS_URL = "https://arcen-agent.arcenpay.com/docs/user-guide/features/tool-gateway"
 
 
 def _cmd_status(args) -> int:

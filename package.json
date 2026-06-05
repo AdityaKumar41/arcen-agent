@@ -12,13 +12,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NousResearch/Arcen-Agent.git"
+    "url": "git+https://github.com/arcenpay/arcen-agent.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NousResearch/Arcen-Agent/issues"
+    "url": "https://github.com/arcenpay/arcen-agent/issues"
   },
-  "homepage": "https://github.com/NousResearch/Arcen-Agent#readme",
+  "homepage": "https://github.com/arcenpay/arcen-agent#readme",
   "dependencies": {
     "@streamdown/math": "^1.0.2",
     "agent-browser": "^0.26.0"
