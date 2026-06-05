@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@arcen/ink": ["src/types/arcen-ink.d.ts"]
+    }
+  }
+}

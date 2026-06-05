@@ -1,0 +1,22 @@
+#
+# docker-compose.windows.yml — Windows Docker Desktop compatible
+#
+# Differences from docker-compose.yml:
+#   - Removes `network_mode: host` (not supported on Docker Desktop for Windows)
+#   - Uses explicit port mappings instead
+#   - Uses Windows-style volume path for ~/.arcen
+#
+# Usage:
+#   docker compose -f docker-compose.windows.yml up -d
+#
+services:
+  gateway:
+    image: nousresearch/arcen-agent:latest
+    container_name: arcen
+    restart: unless-stopped
+    volumes:
+      - ${USERPROFILE}/.arcen:/opt/data
+    environment:
+      - ARCEN_UID=10000
+      - ARCEN_GID=10000
+    command: ["gateway", "run"]
