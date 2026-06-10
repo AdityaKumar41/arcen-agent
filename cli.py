@@ -2849,25 +2849,6 @@ ARCEN_AGENT_LOGO = """[bold #FFD700]██╗  ██╗███████╗
 [#CD7F32]██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
 [#CD7F32]╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]"""
 
-# ASCII Art - Arcen Caduceus (compact, fits in left panel)
-ARCEN_CADUCEUS = """[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀[/]
-[#FFBF00]⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
-
-
-
 def _build_compact_banner() -> str:
     """Build a compact banner that fits the current terminal width."""
     try:
@@ -2901,6 +2882,23 @@ def _build_compact_banner() -> str:
     if w < 30:
         return f"\n[{title_color}]{tiny_line}[/] [dim {dim_color}]- ArcenPay[/]\n"
 
+    compact_logo = ""
+    if w >= 54:
+        compact_logo = (
+            f"\n[bold {title_color}] █████╗ ██████╗  ██████╗███████╗███╗   ██╗[/]\n"
+            f"[{title_color}]██╔══██╗██╔══██╗██╔════╝██╔════╝████╗  ██║[/]\n"
+            f"[{border_color}]███████║██████╔╝██║     █████╗  ██╔██╗ ██║[/]\n"
+            f"[{border_color}]██╔══██║██╔══██╗██║     ██╔══╝  ██║╚██╗██║[/]\n"
+            f"[dim {dim_color}]██║  ██║██║  ██║╚██████╗███████╗██║ ╚████║[/]\n"
+            f"[dim {dim_color}]╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═══╝[/]\n"
+            f"[bold {title_color}] █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]\n"
+            f"[{title_color}]██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]\n"
+            f"[{border_color}]███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]\n"
+            f"[{border_color}]██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]\n"
+            f"[dim {dim_color}]██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]\n"
+            f"[dim {dim_color}]╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]\n"
+        )
+
     inner = w - 2  # inside the box border
     bar = "═" * w
     content_width = inner - 2
@@ -2910,7 +2908,7 @@ def _build_compact_banner() -> str:
     line2 = version_line[:content_width].ljust(content_width)
 
     return (
-        f"\n[bold {border_color}]╔{bar}╗[/]\n"
+        f"{compact_logo}\n[bold {border_color}]╔{bar}╗[/]\n"
         f"[bold {border_color}]║[/] [{title_color}]{line1}[/] [bold {border_color}]║[/]\n"
         f"[bold {border_color}]║[/] [dim {dim_color}]{line2}[/] [bold {border_color}]║[/]\n"
         f"[bold {border_color}]╚{bar}╝[/]\n"
@@ -5283,7 +5281,7 @@ class ArcenCLI:
         if hasattr(self, 'agent') and self.agent and hasattr(self.agent, 'context_compressor'):
             ctx_len = self.agent.context_compressor.context_length
         
-        # Auto-compact for narrow terminals — the full banner with caduceus
+        # Auto-compact for narrow terminals.
         # + tool list needs ~80 columns minimum to render without wrapping.
         term_width = shutil.get_terminal_size().columns
         use_compact = self.compact or term_width < 80

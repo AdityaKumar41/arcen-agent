@@ -98,7 +98,7 @@ USAGE
 BUILT-IN SKINS
 ==============
 
-- ``default`` — Classic Arcen gold/kawaii (the current look)
+- ``default`` — Arcen blue (the current look)
 - ``ares``    — Crimson/bronze war-god theme with custom spinner wings
 - ``mono``    — Clean grayscale monochrome
 - ``slate``   — Cool blue developer-focused theme
@@ -164,24 +164,31 @@ class SkinConfig:
 _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
     "default": {
         "name": "default",
-        "description": "Classic Arcen — gold and kawaii",
+        "description": "Arcen blue — clean and focused",
         "colors": {
-            "banner_border": "#CD7F32",
-            "banner_title": "#FFD700",
-            "banner_accent": "#FFBF00",
-            "banner_dim": "#B8860B",
-            "banner_text": "#FFF8DC",
-            "ui_accent": "#FFBF00",
-            "ui_label": "#DAA520",
+            "banner_border": "#2563EB",
+            "banner_title": "#93C5FD",
+            "banner_accent": "#38BDF8",
+            "banner_dim": "#64748B",
+            "banner_text": "#E0F2FE",
+            "ui_accent": "#38BDF8",
+            "ui_label": "#93C5FD",
             "ui_ok": "#4caf50",
             "ui_error": "#ef5350",
             "ui_warn": "#ffa726",
-            "prompt": "#FFF8DC",
-            "input_rule": "#CD7F32",
-            "response_border": "#FFD700",
-            "status_bar_bg": "#1a1a2e",
-            "session_label": "#DAA520",
-            "session_border": "#8B8682",
+            "prompt": "#E0F2FE",
+            "input_rule": "#2563EB",
+            "response_border": "#38BDF8",
+            "status_bar_bg": "#0F172A",
+            "status_bar_text": "#E0F2FE",
+            "status_bar_strong": "#93C5FD",
+            "status_bar_dim": "#64748B",
+            "status_bar_good": "#67E8F9",
+            "status_bar_warn": "#38BDF8",
+            "status_bar_bad": "#60A5FA",
+            "status_bar_critical": "#F87171",
+            "session_label": "#93C5FD",
+            "session_border": "#64748B",
         },
         "spinner": {
             # Empty = use hardcoded defaults in display.py

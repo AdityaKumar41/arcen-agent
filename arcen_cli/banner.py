@@ -60,30 +60,25 @@ def _skin_color(key: str, fallback: str) -> str:
 
 from arcen_cli import __version__ as VERSION, __release_date__ as RELEASE_DATE
 
-ARCEN_AGENT_LOGO = """[bold #FFD700]██╗  ██╗███████╗██████╗ ███╗   ███╗███████╗███████╗       █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
-[bold #FFD700]██║  ██║██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝      ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
-[#FFBF00]███████║█████╗  ██████╔╝██╔████╔██║█████╗  ███████╗█████╗███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]
-[#FFBF00]██╔══██║██╔══╝  ██╔══██╗██║╚██╔╝██║██╔══╝  ╚════██║╚════╝██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]
-[#CD7F32]██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
-[#CD7F32]╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]"""
+ARCEN_AGENT_LOGO = """[bold #BFDBFE] █████╗ ██████╗  ██████╗███████╗███╗   ██╗       █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
+[bold #93C5FD]██╔══██╗██╔══██╗██╔════╝██╔════╝████╗  ██║      ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
+[#38BDF8]███████║██████╔╝██║     █████╗  ██╔██╗ ██║█████╗███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]
+[#38BDF8]██╔══██║██╔══██╗██║     ██╔══╝  ██║╚██╗██║╚════╝██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]
+[#2563EB]██║  ██║██║  ██║╚██████╗███████╗██║ ╚████║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
+[#1D4ED8]╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═══╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]"""
 
-ARCEN_CADUCEUS = """[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀[/]
-[#FFBF00]⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
-
-
+ARCEN_AGENT_COMPACT_LOGO = """[bold #BFDBFE] █████╗ ██████╗  ██████╗███████╗███╗   ██╗[/]
+[bold #93C5FD]██╔══██╗██╔══██╗██╔════╝██╔════╝████╗  ██║[/]
+[#38BDF8]███████║██████╔╝██║     █████╗  ██╔██╗ ██║[/]
+[#38BDF8]██╔══██║██╔══██╗██║     ██╔══╝  ██║╚██╗██║[/]
+[#2563EB]██║  ██║██║  ██║╚██████╗███████╗██║ ╚████║[/]
+[#1D4ED8]╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═══╝[/]
+[bold #BFDBFE] █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
+[bold #93C5FD]██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
+[#38BDF8]███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]
+[#38BDF8]██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]
+[#2563EB]██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
+[#1D4ED8]╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]"""
 
 # =========================================================================
 # Skills scanning
@@ -498,7 +493,7 @@ def build_welcome_banner(console: "Console", model: str, cwd: str,
                          session_id: str = None,
                          get_toolset_for_tool=None,
                          context_length: int = None):
-    """Build and print a welcome banner with caduceus on left and info on right.
+    """Build and print a welcome banner with session info and tool summaries.
 
     Args:
         console: Rich Console instance.
@@ -544,15 +539,12 @@ def build_welcome_banner(console: "Console", model: str, cwd: str,
     text = _skin_color("banner_text", "#FFF8DC")
     session_color = _skin_color("session_border", "#8B8682")
 
-    # Use skin's custom caduceus art if provided
     try:
         from arcen_cli.skin_engine import get_active_skin
         _bskin = get_active_skin()
-        _hero = _bskin.banner_hero if hasattr(_bskin, 'banner_hero') and _bskin.banner_hero else ARCEN_CADUCEUS
     except Exception:
         _bskin = None
-        _hero = ARCEN_CADUCEUS
-    left_lines = ["", _hero, ""]
+    left_lines = [f"[bold {accent}]Arcen Agent[/]"]
     model_short = model.split("/")[-1] if "/" in model else model
     if model_short.endswith(".gguf"):
         model_short = model_short[:-5]
@@ -765,5 +757,8 @@ def build_welcome_banner(console: "Console", model: str, cwd: str,
     if term_width >= 95:
         _logo = _bskin.banner_logo if _bskin and hasattr(_bskin, 'banner_logo') and _bskin.banner_logo else ARCEN_AGENT_LOGO
         console.print(_logo)
+        console.print()
+    elif term_width >= 72:
+        console.print(ARCEN_AGENT_COMPACT_LOGO)
         console.print()
     console.print(outer_panel)

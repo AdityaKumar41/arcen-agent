@@ -279,16 +279,6 @@ TOOL_CATEGORIES = {
                 "tts_provider": "edge",
             },
             {
-                "name": "Managed gateway",
-                "badge": "subscription",
-                "tag": "Managed OpenAI TTS billed to your subscription",
-                "env_vars": [],
-                "tts_provider": "openai",
-                "requires_nous_auth": True,
-                "managed_gateway_feature": "tts",
-                "override_env_vars": ["VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY"],
-            },
-            {
                 "name": "OpenAI TTS",
                 "badge": "paid",
                 "tag": "High quality voices",
@@ -357,24 +347,9 @@ TOOL_CATEGORIES = {
         "icon": "🔍",
         # Per-provider rows are injected at runtime from
         # plugins.web.<vendor>.provider via _plugin_web_search_providers()
-        # in _visible_providers(). Only non-provider UX setup-flow rows
-        # for the firecrawl backend are listed here:
-        #   - "Managed gateway" — managed Firecrawl billed via Nous
-        #     subscription (requires_nous_auth + override_env_vars).
-        #   - "Firecrawl Self-Hosted" — points firecrawl at a private
-        #     Docker instance via FIRECRAWL_API_URL only.
-        # See PR #25182 for the migration rationale.
+        # in _visible_providers(). Only the self-hosted Firecrawl setup-flow
+        # row is listed here.
         "providers": [
-            {
-                "name": "Managed gateway",
-                "badge": "subscription",
-                "tag": "Managed Firecrawl billed to your subscription",
-                "web_backend": "firecrawl",
-                "env_vars": [],
-                "requires_nous_auth": True,
-                "managed_gateway_feature": "web",
-                "override_env_vars": ["FIRECRAWL_API_KEY", "FIRECRAWL_API_URL"],
-            },
             {
                 "name": "Firecrawl Self-Hosted",
                 "badge": "free · self-hosted",
@@ -393,48 +368,15 @@ TOOL_CATEGORIES = {
         # OpenAI Codex, and xAI are injected at runtime from each
         # ``plugins.image_gen.<vendor>`` package via
         # ``_plugin_image_gen_providers()`` in ``_visible_providers``.
-        # Only non-provider UX setup-flow rows remain here:
-        #   - "Managed gateway" — managed FAL billed via the Nous
-        #     subscription (requires_nous_auth + override_env_vars).
-        #     Uses the fal plugin as the underlying backend but has a
-        #     distinct setup UX.
-        # Mirrors the shape browser/video_gen ship today.
-        "providers": [
-            {
-                "name": "Managed gateway",
-                "badge": "subscription",
-                "tag": "Managed FAL image generation billed to your subscription",
-                "env_vars": [],
-                "requires_nous_auth": True,
-                "managed_gateway_feature": "image_gen",
-                "override_env_vars": ["FAL_KEY"],
-                "imagegen_backend": "fal",
-            },
-        ],
+        "providers": [],
     },
     "video_gen": {
         "name": "Video Generation",
         "icon": "🎬",
-        # "Managed gateway" row mirrors the image_gen pattern — managed
-        # FAL video generation billed via the managed gateway.  Plugin-backed
-        # provider rows (FAL BYOK, xAI, …) are injected at runtime by
-        # ``_plugin_video_gen_providers()`` in ``_visible_providers``.
-        "providers": [
-            {
-                "name": "Managed gateway",
-                "badge": "subscription",
-                "tag": "Managed FAL video generation billed to your subscription",
-                "env_vars": [],
-                "requires_nous_auth": True,
-                "managed_gateway_feature": "video_gen",
-                "override_env_vars": ["FAL_KEY"],
-                # The underlying plugin backend — when the user picks
-                # "Managed gateway" we set video_gen.provider = "fal"
-                # and video_gen.use_gateway = True so the FAL plugin
-                # routes through the managed queue gateway.
-                "video_gen_plugin_name": "fal",
-            },
-        ],
+        # Plugin-backed provider rows (FAL BYOK, xAI, …) are injected at
+        # runtime by ``_plugin_video_gen_providers()`` in
+        # ``_visible_providers``.
+        "providers": [],
     },
     "x_search": {
         "name": "X (Twitter) Search",
@@ -478,12 +420,8 @@ TOOL_CATEGORIES = {
         # non-provider UX setup-flow rows remain here. "Local Browser" is
         # listed FIRST so it is the default-highlighted (index 0) choice on a
         # fresh install — pressing Enter must land on the free, no-key local
-        # backend, never on the paid Managed gateway gateway row:
+        # backend:
         #   - "Local Browser" — non-cloud option, no CloudBrowserProvider.
-        #   - "Managed gateway (Browser Use cloud)" — managed Browser Use
-        #     billed via managed gateway (requires_nous_auth +
-        #     override_env_vars). Uses the browser-use plugin as the
-        #     underlying backend but has a distinct setup UX.
         #   - "Camofox" — anti-detection local Firefox; short-circuits the
         #     cloud-provider dispatch path via _is_camofox_mode().
         "providers": [
@@ -493,17 +431,6 @@ TOOL_CATEGORIES = {
                 "tag": "Headless Chromium, no API key needed",
                 "env_vars": [],
                 "browser_provider": "local",
-                "post_setup": "agent_browser",
-            },
-            {
-                "name": "Managed gateway (Browser Use cloud)",
-                "badge": "subscription",
-                "tag": "Managed Browser Use billed to your subscription",
-                "env_vars": [],
-                "browser_provider": "browser-use",
-                "requires_nous_auth": True,
-                "managed_gateway_feature": "browser",
-                "override_env_vars": ["BROWSER_USE_API_KEY"],
                 "post_setup": "agent_browser",
             },
             {
