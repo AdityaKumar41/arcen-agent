@@ -1,7 +1,7 @@
 {
   "id": "arcen-agent",
   "name": "Arcen Agent",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "Self-improving open-source AI agent by ArcenPay with ACP editor integration, persistent memory, skills, and rich tool support.",
   "repository": "https://github.com/AdityaKumar41/arcen-agent",
   "website": "https://arcen-cli.arcenpay.com/docs/user-guide/features/acp",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "distribution": {
     "uvx": {
-      "package": "arcen-agent[acp]==0.15.1",
+      "package": "arcen-agent[acp]==0.15.2",
       "args": ["arcen-acp"]
     }
   }
