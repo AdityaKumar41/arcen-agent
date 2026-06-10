@@ -1,0 +1,34 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: MCP
+description: Connect external MCP servers to extend Arcen.
+---
+
+# MCP
+
+Arcen can connect to Model Context Protocol servers to add external tools and resources without hardcoding every integration into core.
+
+## When to use MCP
+
+Use MCP when a capability already exists as a server or when a team wants to expose tools independently from Arcen releases.
+
+Common examples include:
+
+- Browser or desktop control servers.
+- Internal knowledge bases.
+- SaaS APIs exposed through a typed tool surface.
+- Repository, issue, or design-system integrations.
+
+## Configuration flow
+
+Use the Arcen MCP setup commands to discover, configure, and start servers. MCP config is managed through `arcen_cli/mcp_config.py` and startup behavior is handled by `arcen_cli/mcp_startup.py`.
+
+## Development notes
+
+MCP belongs beside the tool system, not inside unrelated feature code. Prefer MCP for external tools and plugins for Arcen-native lifecycle hooks or local tool registration.
+
+## Related pages
+
+- [Tools](/docs/features/tools)
+- [Plugins](/docs/developer-guide/plugins)
+- [Environment](/docs/reference/environment)

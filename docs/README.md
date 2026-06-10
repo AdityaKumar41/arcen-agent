@@ -1,6 +1,6 @@
 # Arcen Agent Docs
 
-This directory is a standalone Next.js + MDX documentation site.
+This directory is a standalone Astro + MDX documentation site styled with Tailwind CSS. It is dark by default.
 
 ## Run locally
 
@@ -15,15 +15,4 @@ npm run dev
 npm run build
 ```
 
-## Deploy on Vercel
-
-Import the repository in Vercel and set:
-
-| Setting | Value |
-| --- | --- |
-| Framework preset | Next.js |
-| Root directory | `docs` |
-| Install command | `npm install` |
-| Build command | `npm run build` |
-
-The docs do not require the Python runtime to deploy.
+The build runs `astro check` before generating the static site.

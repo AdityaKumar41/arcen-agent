@@ -1,0 +1,43 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Skills
+description: Procedural memory, built-in skills, and optional skills.
+---
+
+import Callout from "../../../components/Callout.astro";
+
+# Skills
+
+Skills are procedural instructions that can be loaded into Arcen for repeatable workflows. Built-in skills live in `skills`, while heavier or niche official skills live in `optional-skills`.
+
+## Built-in and optional skills
+
+| Directory | Behavior |
+| --- | --- |
+| `skills/` | Built-in skills bundled and loadable by default. |
+| `optional-skills/` | Official skills installed explicitly with `arcen skills install official/<category>/<skill>`. |
+
+## Skill commands
+
+Skill slash commands are handled by `agent/skill_commands.py`. They are injected as user messages rather than system prompts so prompt caching stays effective.
+
+## Authoring standards
+
+New or modernized skills should include:
+
+- Concise frontmatter with a description no longer than 60 characters.
+- A modern body order: intro, When to Use, Prerequisites, How to Run, Quick Reference, Procedure, Pitfalls, Verification.
+- Scripts in `scripts/`, references in `references/`, and templates in `templates/`.
+- Tests under `tests/skills/test_<skill>_skill.py`.
+- No live network calls in tests.
+
+<Callout type="tip" title="Keep skills operational">
+  Put non-trivial parsing, XML walking, or API glue in helper scripts instead of asking the model to recreate that logic every run.
+</Callout>
+
+## Optional skill installation
+
+```bash
+arcen skills install official/productivity/example-skill
+arcen skills list
+```

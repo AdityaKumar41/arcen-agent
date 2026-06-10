@@ -1,0 +1,41 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Cron
+description: Scheduled tasks and recurring automations.
+---
+
+# Cron
+
+Arcen includes a scheduler for recurring jobs and unattended automations.
+
+## What cron is for
+
+Use cron jobs for tasks such as:
+
+- Daily reports.
+- Weekly audits.
+- Scheduled reminders.
+- Repeating maintenance checks.
+- Background delivery to configured messaging platforms.
+
+## Key files
+
+| File | Purpose |
+| --- | --- |
+| `cron/jobs.py` | Job definitions and runtime job handling. |
+| `cron/scheduler.py` | Scheduler orchestration. |
+| `arcen_cli/cron.py` | CLI management surface. |
+
+## Delivery
+
+Scheduled jobs can deliver results through the same platform surfaces used by normal gateway conversations when the platform is configured.
+
+## Operational notes
+
+Keep scheduled tasks explicit and review their tool access. Cron jobs run unattended, so production deployments should use scoped tools, stable working directories, and logs.
+
+## Related pages
+
+- [Messaging gateway](/docs/user-guide/messaging-gateway)
+- [Production](/docs/deployment/production)
+- [Commands](/docs/reference/commands)

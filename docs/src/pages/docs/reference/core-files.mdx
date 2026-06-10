@@ -1,0 +1,39 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Core files
+description: Load-bearing files and where to make changes.
+---
+
+# Core files
+
+Use this page when deciding where a change belongs.
+
+| File or directory | Edit when |
+| --- | --- |
+| `run_agent.py` | You need to change the agent loop, budgets, callbacks, or agent-level tools. |
+| `model_tools.py` | You need to change tool discovery or function-call dispatch. |
+| `toolsets.py` | You need to expose a built-in tool through a toolset. |
+| `cli.py` | You need to change interactive CLI behavior. |
+| `arcen_cli/commands.py` | You need to add or edit slash command definitions. |
+| `gateway/run.py` | You need gateway runtime behavior or command dispatch. |
+| `gateway/platforms` | You need a messaging platform adapter. |
+| `plugins` | You need extension behavior without core edits. |
+| `ui-tui` | You need the Ink terminal UI. |
+| `tui_gateway` | You need TUI backend methods or events. |
+
+## Tool dependency chain
+
+```text
+tools/registry.py
+  -> tools/*.py
+  -> model_tools.py
+  -> run_agent.py, cli.py, batch_runner.py, environments
+```
+
+## Config loaders
+
+| Loader | Used by |
+| --- | --- |
+| `load_cli_config()` in `cli.py` | Interactive CLI. |
+| `load_config()` in `arcen_cli/config.py` | Setup, tools, and most subcommands. |
+| Direct YAML loading in `gateway/run.py` | Gateway runtime. |

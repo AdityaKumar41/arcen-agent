@@ -1,0 +1,22 @@
+---
+import DocsRail from "../components/DocsRail.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+import BaseLayout from "./BaseLayout.astro";
+
+const frontmatter = Astro.props.frontmatter ?? {};
+const headings = Astro.props.headings ?? [];
+const title = frontmatter.title ? `${frontmatter.title} | Arcen Agent Docs` : "Arcen Agent Docs";
+const description = frontmatter.description ?? "Documentation for Arcen Agent.";
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="mx-auto grid w-[min(1440px,calc(100%-3rem))] grid-cols-[252px_minmax(0,780px)_236px] justify-center gap-11 px-6 py-9 max-xl:grid-cols-[238px_minmax(0,1fr)] max-xl:gap-8 max-md:block max-md:w-full max-md:px-4 max-md:py-4">
+    <DocsSidebar currentPath={Astro.url.pathname} />
+    <main class="min-w-0">
+      <article class="docs-prose">
+        <slot />
+      </article>
+    </main>
+    <DocsRail headings={headings} />
+  </div>
+</BaseLayout>

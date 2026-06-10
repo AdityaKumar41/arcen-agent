@@ -1,0 +1,34 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Context files
+description: Project instructions and workspace context.
+---
+
+# Context files
+
+Context files are project-local instructions that shape how Arcen behaves inside a workspace.
+
+## What belongs in context
+
+Use context files for durable project knowledge:
+
+- Build and test commands.
+- Repository structure.
+- Coding conventions.
+- Deployment notes.
+- Safety rules for tools and secrets.
+- Feature ownership and important entry points.
+
+## What does not belong in context
+
+Do not put API keys, tokens, passwords, or private credentials in context files. Secrets belong in `~/.arcen/.env`.
+
+## How context is used
+
+The agent reads workspace instructions before acting. This helps it choose the right files, commands, and contribution style without relearning the repository every turn.
+
+## Related pages
+
+- [Configuration](/docs/getting-started/configuration)
+- [Environment](/docs/reference/environment)
+- [Contributing](/docs/developer-guide/contributing)

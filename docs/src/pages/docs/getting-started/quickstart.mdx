@@ -1,0 +1,75 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Quickstart
+description: Install, configure, and start a first Arcen session.
+---
+
+import Callout from "../../../components/Callout.astro";
+
+# Quickstart
+
+Use this path when you want a local Arcen install, a first model configured, and an interactive session running.
+
+## Install
+
+On Linux, macOS, WSL2, or Termux:
+
+```bash
+curl -fsSL https://arcen-cli.arcenpay.com/install.sh | bash
+```
+
+On native Windows PowerShell:
+
+```powershell
+iex (irm https://arcen-cli.arcenpay.com/install.ps1)
+```
+
+The installer handles Python, uv, Node.js, ripgrep, ffmpeg, and the shell support needed by Arcen tools.
+
+## Start Arcen
+
+Reload your shell, then start the CLI:
+
+```bash
+source ~/.bashrc
+arcen
+```
+
+If you use zsh:
+
+```bash
+source ~/.zshrc
+arcen
+```
+
+## Run setup
+
+Inside or outside the interactive CLI, run:
+
+```bash
+arcen setup
+arcen model
+arcen tools
+```
+
+`arcen setup` walks through provider credentials, memory, gateway options, and common defaults. `arcen model` changes the active provider and model. `arcen tools` lets you enable or disable toolsets.
+
+<Callout type="info" title="Secrets stay out of config">
+  API keys and tokens belong in `~/.arcen/.env`. Non-secret behavior belongs in `~/.arcen/config.yaml`.
+</Callout>
+
+## First useful commands
+
+```bash
+arcen              # Start an interactive session
+arcen doctor       # Diagnose local setup issues
+arcen logs         # Browse runtime logs
+arcen gateway      # Manage messaging gateway setup and runtime
+arcen update       # Update the installed CLI
+```
+
+## Next steps
+
+- Use [CLI and TUI](/docs/user-guide/cli) for local workflows.
+- Use [Messaging gateway](/docs/user-guide/messaging-gateway) for Telegram, Discord, Slack, WhatsApp, Signal, and related adapters.
+- Use [Configuration](/docs/getting-started/configuration) to understand profiles, logs, and provider settings.

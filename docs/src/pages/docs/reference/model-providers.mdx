@@ -1,0 +1,39 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Model providers
+description: Provider plugin discovery and selection.
+---
+
+# Model providers
+
+Model providers are plugin profiles. They are discovered lazily the first time code calls `get_provider_profile()` or `list_providers()`.
+
+## Location
+
+Provider plugins live in:
+
+```text
+plugins/model-providers/<name>/__init__.py
+```
+
+Each provider registers a `ProviderProfile`.
+
+## Discovery order
+
+1. Bundled provider plugins.
+2. User provider plugins under `$ARCEN_HOME/plugins/model-providers/<name>`.
+3. Legacy files under `providers/<name>.py`.
+
+User providers override bundled providers of the same name.
+
+## Supported examples
+
+The README references OpenRouter, NovitaAI, NVIDIA NIM, Xiaomi MiMo, z.ai/GLM, Kimi/Moonshot, MiniMax, Hugging Face, OpenAI, Anthropic, LM Studio, Ollama, and OpenAI-compatible endpoints.
+
+Use:
+
+```bash
+arcen model
+```
+
+to select the active provider and model.

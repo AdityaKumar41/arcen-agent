@@ -1,0 +1,39 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Terminal backends
+description: Local, Docker, SSH, Modal, Daytona, and Singularity execution.
+---
+
+# Terminal backends
+
+Terminal backends decide where shell tools run. They are the main execution boundary for command-line work.
+
+## Available backends
+
+| Backend | Use when |
+| --- | --- |
+| Local | You want commands to run on the current machine. |
+| Docker | You want process and filesystem isolation with a container image. |
+| SSH | You want Arcen to work on a remote host or VPS. |
+| Modal | You want serverless compute that can wake on demand. |
+| Daytona | You want persistent cloud development environments. |
+| Singularity | You run in HPC or container environments where Singularity is standard. |
+
+## Configuration posture
+
+Use `terminal.cwd` in `~/.arcen/config.yaml` to set the working directory for gateway and messaging sessions.
+
+```yaml
+terminal:
+  cwd: /srv/arcen/workspace
+```
+
+## Security notes
+
+The terminal backend is the primary boundary for tool execution. Production deployments should prefer isolated environments and explicit network egress rules when the agent can run commands.
+
+## Related pages
+
+- [Tools](/docs/features/tools)
+- [Security model](/docs/deployment/security)
+- [Production](/docs/deployment/production)

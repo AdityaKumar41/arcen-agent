@@ -1,0 +1,43 @@
+---
+import Icon from "./Icon.astro";
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings?: Heading[];
+}
+
+const { headings = [] } = Astro.props;
+const toc = headings.filter(heading => heading.depth === 2 || heading.depth === 3);
+---
+
+{toc.length > 0 && (
+  <aside class="hidden xl:block" aria-label="On this page">
+    <nav class="sticky top-28 pl-2">
+      <div class="mb-5 flex items-center gap-3 text-zinc-300">
+        <Icon name="scroll" class="size-5 text-zinc-400" />
+        <p class="m-0 text-lg font-semibold">On this page</p>
+      </div>
+      <ol class="grid gap-4">
+        {toc.map((heading, index) => (
+          <li>
+            <a
+              href={`#${heading.slug}`}
+              class:list={[
+                "block text-base leading-6 transition hover:text-white",
+                heading.depth === 3 ? "pl-4 text-zinc-500" : "text-zinc-400",
+                index === 0 ? "font-semibold text-white" : ""
+              ]}
+            >
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </aside>
+)}

@@ -1,0 +1,38 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Gateway platforms
+description: Adapter model and platform-specific setup notes.
+---
+
+# Gateway platforms
+
+Gateway platform adapters live in `gateway/platforms`. Each adapter translates platform events into Arcen sessions and sends responses back to the platform.
+
+## Supported adapters
+
+The tree includes adapters for Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Email, SMS, DingTalk, WeCom, Weixin, Feishu, QQ Bot, BlueBubbles, Yuanbao, webhook, API server, and Home Assistant.
+
+## Adapter responsibilities
+
+Each adapter handles:
+
+- Authentication and platform configuration.
+- Incoming message parsing.
+- Sender and thread identity.
+- Attachments or media where supported.
+- Delivery back to the platform.
+- Platform-specific command behavior.
+
+## Adding a platform
+
+Start with `gateway/platforms/ADDING_A_PLATFORM.md`. Keep platform-specific code in the adapter and avoid leaking platform behavior into core agent files.
+
+## Commands and help
+
+Gateway command help is generated from the central command registry in `arcen_cli/commands.py`. Add commands there first so CLI, gateway help, Telegram menu, Slack routing, and autocomplete stay aligned.
+
+## Related pages
+
+- [Messaging gateway](/docs/user-guide/messaging-gateway)
+- [Commands](/docs/reference/commands)
+- [Production](/docs/deployment/production)

@@ -1,0 +1,36 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Environment
+description: Secrets, config files, logs, and runtime paths.
+---
+
+import Callout from "../../../components/Callout.astro";
+
+# Environment
+
+Arcen uses profile-aware paths for config, logs, state, tools, and plugins.
+
+## User files
+
+| Path | Purpose |
+| --- | --- |
+| `~/.arcen/config.yaml` | Non-secret config. |
+| `~/.arcen/.env` | Secrets only. |
+| `~/.arcen/logs/agent.log` | Agent logs. |
+| `~/.arcen/logs/errors.log` | Warnings and errors. |
+| `~/.arcen/logs/gateway.log` | Gateway logs. |
+| `~/.arcen/plugins` | User-installed plugins. |
+| `~/.arcen/skills` | User-installed skills. |
+
+## Important variables
+
+| Variable | Purpose |
+| --- | --- |
+| `ARCEN_HOME` | Overrides active Arcen home. |
+| `ARCEN_TUI` | Set to `1` to start the TUI. |
+| `TERMINAL_CWD` | Bridged from `terminal.cwd` for child tools. |
+| Provider API keys | Stored in `.env`, for example `OPENAI_API_KEY`. |
+
+<Callout type="warning" title="Config owns working directory">
+  `TERMINAL_CWD` should not be manually configured in `.env`. Use `terminal.cwd` in `config.yaml`.
+</Callout>

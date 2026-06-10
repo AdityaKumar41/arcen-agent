@@ -1,0 +1,52 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Security model
+description: Approvals, secrets, container isolation, and egress.
+---
+
+import Callout from "../../../components/Callout.astro";
+
+# Security model
+
+Arcen is an agent that can call tools, run terminal commands, connect to APIs, and deliver messages. Treat the terminal backend and configured tools as the main execution boundary.
+
+## Approval and tool exposure
+
+Keep toolsets scoped to the work the agent should perform. For custom capabilities, prefer plugins so they can be enabled, disabled, and reviewed independently.
+
+## Secrets
+
+Store secrets in `~/.arcen/.env`, not in docs, examples, or `config.yaml`.
+
+```bash
+OPENAI_API_KEY=...
+TELEGRAM_BOT_TOKEN=...
+```
+
+## Docker egress isolation
+
+When running in Docker, the safest production posture is to keep internal services on an internal network and expose egress only through allowlisted paths.
+
+```yaml
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  egress:
+    driver: bridge
+```
+
+Attach gateway services that need external APIs to the egress network. Keep internal-only services on the internal network.
+
+<Callout type="tip" title="Use explicit allowlists">
+  Route outbound traffic through a proxy such as Squid or Envoy and allow only the model providers, messaging APIs, and GitHub endpoints your deployment needs.
+</Callout>
+
+## Validation
+
+Test that arbitrary outbound traffic fails from isolated containers and that required internal services still resolve.
+
+```bash
+docker compose exec gateway curl -sf --max-time 5 https://example.com
+docker compose exec gateway curl -sf --max-time 5 http://arcen-dashboard:9119/health
+```

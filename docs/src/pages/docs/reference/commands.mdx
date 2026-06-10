@@ -1,0 +1,43 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Commands
+description: Common CLI and slash-command reference.
+---
+
+# Commands
+
+This page lists common commands for day-to-day use. The source of truth for slash command definitions is `arcen_cli/commands.py`.
+
+## CLI commands
+
+| Command | Purpose |
+| --- | --- |
+| `arcen` | Start an interactive CLI session. |
+| `arcen --tui` | Start the Ink terminal UI. |
+| `arcen setup` | Run setup wizard. |
+| `arcen model` | Select provider and model. |
+| `arcen tools` | Configure tools and toolsets. |
+| `arcen gateway` | Configure and run messaging gateway. |
+| `arcen logs` | Browse logs. |
+| `arcen doctor` | Diagnose setup issues. |
+| `arcen update` | Update Arcen. |
+
+## Shared slash commands
+
+| Command | Purpose |
+| --- | --- |
+| `/new`, `/reset` | Start fresh conversation. |
+| `/model [provider:model]` | Change active model. |
+| `/personality [name]` | Set personality. |
+| `/retry` | Retry last turn. |
+| `/undo` | Undo last turn. |
+| `/compress` | Compress context. |
+| `/usage` | Show usage details. |
+| `/skills` | Browse available skills. |
+| `/stop` | Stop active gateway work where supported. |
+
+## Adding a slash command
+
+1. Add a `CommandDef` in `arcen_cli/commands.py`.
+2. Add a handler in `ArcenCLI.process_command()` in `cli.py`.
+3. Add gateway handling in `gateway/run.py` if the command should work in messaging platforms.

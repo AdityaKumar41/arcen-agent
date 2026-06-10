@@ -1,0 +1,36 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Memory
+description: Persistent recall, search, profiles, and providers.
+---
+
+import Callout from "../../../components/Callout.astro";
+
+# Memory
+
+Arcen supports local session recall and pluggable memory providers. The session database is implemented in `arcen_state.py` and memory provider orchestration lives in `agent/memory_manager.py`.
+
+## Session storage
+
+`SessionDB` stores conversations in SQLite and supports FTS5 search for past sessions. Logs and session state are profile-aware through `get_arcen_home()`.
+
+## Provider plugins
+
+Memory-provider plugins live under `plugins/memory/<name>` in the repo. Current built-in providers include honcho, mem0, supermemory, byterover, hindsight, holographic, openviking, and retaindb.
+
+Provider lifecycle methods include:
+
+| Method | Purpose |
+| --- | --- |
+| `sync_turn(turn_messages)` | Persist or analyze a completed turn. |
+| `prefetch(query)` | Fetch relevant memory before a turn. |
+| `shutdown()` | Clean up provider resources. |
+| `post_setup(arcen_home, config)` | Optional setup wizard integration. |
+
+## Policy for new providers
+
+New memory backends should ship as standalone plugin repositories installed into `~/.arcen/plugins` or exposed by pip entry points. Do not add new in-tree directories under `plugins/memory`.
+
+<Callout type="warning" title="No core hardcoding">
+  Plugins must not add provider-specific logic to `run_agent.py`, `cli.py`, `gateway/run.py`, or `arcen_cli/main.py`. Expand the generic plugin surface instead.
+</Callout>

@@ -1,0 +1,62 @@
+---
+layout: ../../../layouts/DocsLayout.astro
+title: Architecture
+description: Agent loop, tool registry, CLI, gateway, and TUI.
+---
+
+# Architecture
+
+Arcen is centered on a synchronous agent loop in `run_agent.py`, a registry-backed tool system, and multiple entry points that share the same underlying session and tool behavior.
+
+## Key files
+
+| File | Role |
+| --- | --- |
+| `run_agent.py` | `AIAgent`, conversation loop, budget handling, callbacks, and agent-level tools. |
+| `model_tools.py` | Tool orchestration, discovery, and function-call handling. |
+| `toolsets.py` | Toolset definitions and `_ARCEN_CORE_TOOLS`. |
+| `cli.py` | Interactive CLI orchestration. |
+| `arcen_state.py` | SQLite session store with FTS5 search. |
+| `arcen_cli/commands.py` | Central slash-command registry. |
+| `gateway/run.py` | Messaging gateway runtime and dispatch. |
+| `ui-tui` | Ink terminal UI. |
+| `tui_gateway` | Python JSON-RPC backend for the TUI. |
+
+## Dependency chain
+
+```text
+tools/registry.py
+  -> tools/*.py
+  -> model_tools.py
+  -> run_agent.py, cli.py, batch_runner.py, environments
+```
+
+## Agent loop
+
+The core loop calls the selected provider, dispatches tool calls, appends tool results, and stops when the model returns final content or the budget is exhausted.
+
+```python
+while api_call_count < self.max_iterations:
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        tools=tool_schemas,
+    )
+    if response.tool_calls:
+        for tool_call in response.tool_calls:
+            result = handle_function_call(tool_call.name, tool_call.args, task_id)
+            messages.append(tool_result_message(result))
+    else:
+        return response.content
+```
+
+## TUI process model
+
+```text
+Node Ink UI
+  stdio JSON-RPC
+Python tui_gateway
+  AIAgent + tools + sessions
+```
+
+TypeScript owns rendering and interaction. Python owns model calls, sessions, tools, and slash-command dispatch.
