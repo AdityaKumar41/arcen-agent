@@ -211,11 +211,10 @@ def test_locale_catalogs_ship_in_both_wheel_and_sdist():
     (sdist). Without both, sealed installs drop the catalogs and gateway/CLI
     commands surface raw i18n keys like `gateway.reset.header_default`.
     """
-    data = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    data_files = data["tool"]["setuptools"].get("data-files", {})
-    assert data_files.get("locales") == ["locales/*.yaml"], (
-        "pyproject [tool.setuptools.data-files] must declare "
-        'locales = ["locales/*.yaml"] so the wheel ships i18n catalogs'
+    setup_py = (REPO_ROOT / "setup.py").read_text(encoding="utf-8")
+    assert '*_data_tree("locales")' in setup_py, (
+        "setup.py must include locales via data_files so the wheel ships "
+        "i18n catalogs"
     )
 
     manifest = (REPO_ROOT / "MANIFEST.in").read_text(encoding="utf-8")

@@ -14,13 +14,13 @@ on:
     paths-ignore:
       - "**/*.md"
       - "docs/**"
-      - "website/**"
+      - "public/**"
   pull_request:
     branches: [main]
     paths-ignore:
       - "**/*.md"
       - "docs/**"
-      - "website/**"
+      - "public/**"
 
 permissions:
   contents: read
