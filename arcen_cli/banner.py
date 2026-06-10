@@ -115,7 +115,7 @@ _UPDATE_CHECK_CACHE_SECONDS = 6 * 3600
 # (e.g. nix-built arcen — no local git history to count against).
 UPDATE_AVAILABLE_NO_COUNT = -1
 
-_UPSTREAM_REPO_URL = "https://github.com/arcenpay/arcen-agent.git"
+_UPSTREAM_REPO_URL = "https://github.com/AdityaKumar41/arcen-agent.git"
 
 
 def _check_via_rev(local_rev: str) -> Optional[int]:
@@ -367,7 +367,7 @@ def get_git_banner_state(repo_dir: Optional[Path] = None) -> Optional[dict]:
     return {"upstream": upstream, "local": local, "ahead": max(ahead, 0)}
 
 
-_RELEASE_URL_BASE = "https://github.com/arcenpay/arcen-agent/releases/tag"
+_RELEASE_URL_BASE = "https://github.com/AdityaKumar41/arcen-agent/releases/tag"
 _latest_release_cache: Optional[tuple] = None  # (tag, url) once resolved
 
 
@@ -376,7 +376,7 @@ def get_latest_release_tag(repo_dir: Optional[Path] = None) -> Optional[tuple]:
 
     Local-only — runs ``git describe --tags --abbrev=0`` against the
     Arcen checkout. Cached per-process. Release URL always points at the
-    canonical arcenpay/arcen-agent repo (forks don't get a link).
+    canonical AdityaKumar41/arcen-agent repo (forks don't get a link).
     """
     global _latest_release_cache
     if _latest_release_cache is not None:

@@ -6,7 +6,7 @@
 
 <p align="center">
 <a href="https://arcenpay.com"><img src="https://img.shields.io/badge/Team-ArcenPay-blueviolet?style=for-the-badge" alt="ArcenPay"></a>
-<a href="https://github.com/arcenpay/arcen-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+<a href="https://github.com/AdityaKumar41/arcen-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
 <a href="https://arcenpay.com"><img src="https://img.shields.io/badge/Built%20by-ArcenPay-blueviolet?style=for-the-badge" alt="Built by ArcenPay"></a>
 
 </p>
@@ -32,24 +32,24 @@ Use any model you want — [OpenRouter](https://openrouter.ai) (200+ models), [N
 ### Linux, macOS, WSL2, Termux
 
 ```bash
-curl -fsSL https://arcen-agent.arcenpay.com/install.sh | bash
+curl -fsSL https://arcen-cli.arcenpay.com/install.sh | bash
 ```
 
 ### Windows (native, PowerShell)
 
-> **Heads up:** Native Windows runs Arcen without WSL — CLI, gateway, TUI, and tools all work natively. If you'd rather use WSL2, the Linux/macOS one-liner above works there too. Found a bug? Please [file issues](https://github.com/arcenpay/arcen-agent/issues).
+> **Heads up:** Native Windows runs Arcen without WSL — CLI, gateway, TUI, and tools all work natively. If you'd rather use WSL2, the Linux/macOS one-liner above works there too. Found a bug? Please [file issues](https://github.com/AdityaKumar41/arcen-agent/issues).
 
 Run this in PowerShell:
 
 ```powershell
-iex (irm https://arcen-agent.arcenpay.com/install.ps1)
+iex (irm https://arcen-cli.arcenpay.com/install.ps1)
 ```
 
 The installer handles everything: uv, Python 3.11, Node.js, ripgrep, ffmpeg, **and a portable Git Bash** (MinGit, unpacked to `%LOCALAPPDATA%\arcen\git` — no admin required, completely isolated from any system Git install). Arcen uses this bundled Git Bash to run shell commands.
 
 If you already have Git installed, the installer detects it and uses that instead. Otherwise a ~45MB MinGit download is all you need — it won't touch or interfere with any system Git.
 
-> **Android / Termux:** The tested manual path is documented in the [Termux guide](https://arcen-agent.arcenpay.com/docs/getting-started/termux). On Termux, Arcen installs a curated `.[termux]` extra because the full `.[all]` extra currently pulls Android-incompatible voice dependencies.
+> **Android / Termux:** The tested manual path is documented in the [Termux guide](https://arcen-cli.arcenpay.com/docs/getting-started/termux). On Termux, Arcen installs a curated `.[termux]` extra because the full `.[all]` extra currently pulls Android-incompatible voice dependencies.
 >
 > **Windows:** Native Windows is fully supported — the PowerShell one-liner above installs everything. If you'd rather use WSL2, the Linux command works there too. Native Windows install lives under `%LOCALAPPDATA%\arcen`; WSL2 installs under `~/.arcen` as on Linux.
 
@@ -76,7 +76,7 @@ arcen update       # Update to the latest version
 arcen doctor       # Diagnose any issues
 ```
 
-📖 **[Full documentation →](https://arcen-agent.arcenpay.com/docs/)**
+📖 **[Full documentation →](https://arcen-cli.arcenpay.com/docs/)**
 
 ## CLI vs Messaging Quick Reference
 
@@ -94,31 +94,31 @@ Arcen has two entry points: start the terminal UI with `arcen`, or run the gatew
 | Interrupt current work         | `Ctrl+C` or send a new message                | `/stop` or send a new message                                                  |
 | Platform-specific status       | `/platforms`                                  | `/status`, `/sethome`                                                          |
 
-For the full command lists, see the [CLI guide](https://arcen-agent.arcenpay.com/docs/user-guide/cli) and the [Messaging Gateway guide](https://arcen-agent.arcenpay.com/docs/user-guide/messaging).
+For the full command lists, see the [CLI guide](https://arcen-cli.arcenpay.com/docs/user-guide/cli) and the [Messaging Gateway guide](https://arcen-cli.arcenpay.com/docs/user-guide/messaging).
 
 ---
 
 ## Documentation
 
-All documentation lives at **[arcen-agent.arcenpay.com/docs](https://arcen-agent.arcenpay.com/docs/)**:
+All documentation lives at **[arcen-cli.arcenpay.com/docs](https://arcen-cli.arcenpay.com/docs/)**:
 
 | Section                                                                                        | What's Covered                                             |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Quickstart](https://arcen-agent.arcenpay.com/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |
-| [CLI Usage](https://arcen-agent.arcenpay.com/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |
-| [Configuration](https://arcen-agent.arcenpay.com/docs/user-guide/configuration)                | Config file, providers, models, all options                |
-| [Messaging Gateway](https://arcen-agent.arcenpay.com/docs/user-guide/messaging)                | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |
-| [Security](https://arcen-agent.arcenpay.com/docs/user-guide/security)                          | Command approval, DM pairing, container isolation          |
-| [Tools & Toolsets](https://arcen-agent.arcenpay.com/docs/user-guide/features/tools)            | 40+ tools, toolset system, terminal backends               |
-| [Skills System](https://arcen-agent.arcenpay.com/docs/user-guide/features/skills)              | Procedural memory, Skills Hub, creating skills             |
-| [Memory](https://arcen-agent.arcenpay.com/docs/user-guide/features/memory)                     | Persistent memory, user profiles, best practices           |
-| [MCP Integration](https://arcen-agent.arcenpay.com/docs/user-guide/features/mcp)               | Connect any MCP server for extended capabilities           |
-| [Cron Scheduling](https://arcen-agent.arcenpay.com/docs/user-guide/features/cron)              | Scheduled tasks with platform delivery                     |
-| [Context Files](https://arcen-agent.arcenpay.com/docs/user-guide/features/context-files)       | Project context that shapes every conversation             |
-| [Architecture](https://arcen-agent.arcenpay.com/docs/developer-guide/architecture)             | Project structure, agent loop, key classes                 |
-| [Contributing](https://arcen-agent.arcenpay.com/docs/developer-guide/contributing)             | Development setup, PR process, code style                  |
-| [CLI Reference](https://arcen-agent.arcenpay.com/docs/reference/cli-commands)                  | All commands and flags                                     |
-| [Environment Variables](https://arcen-agent.arcenpay.com/docs/reference/environment-variables) | Complete env var reference                                 |
+| [Quickstart](https://arcen-cli.arcenpay.com/docs/getting-started/quickstart)                 | Install → setup → first conversation in 2 minutes          |
+| [CLI Usage](https://arcen-cli.arcenpay.com/docs/user-guide/cli)                              | Commands, keybindings, personalities, sessions             |
+| [Configuration](https://arcen-cli.arcenpay.com/docs/user-guide/configuration)                | Config file, providers, models, all options                |
+| [Messaging Gateway](https://arcen-cli.arcenpay.com/docs/user-guide/messaging)                | Telegram, Discord, Slack, WhatsApp, Signal, Home Assistant |
+| [Security](https://arcen-cli.arcenpay.com/docs/user-guide/security)                          | Command approval, DM pairing, container isolation          |
+| [Tools & Toolsets](https://arcen-cli.arcenpay.com/docs/user-guide/features/tools)            | 40+ tools, toolset system, terminal backends               |
+| [Skills System](https://arcen-cli.arcenpay.com/docs/user-guide/features/skills)              | Procedural memory, Skills Hub, creating skills             |
+| [Memory](https://arcen-cli.arcenpay.com/docs/user-guide/features/memory)                     | Persistent memory, user profiles, best practices           |
+| [MCP Integration](https://arcen-cli.arcenpay.com/docs/user-guide/features/mcp)               | Connect any MCP server for extended capabilities           |
+| [Cron Scheduling](https://arcen-cli.arcenpay.com/docs/user-guide/features/cron)              | Scheduled tasks with platform delivery                     |
+| [Context Files](https://arcen-cli.arcenpay.com/docs/user-guide/features/context-files)       | Project context that shapes every conversation             |
+| [Architecture](https://arcen-cli.arcenpay.com/docs/developer-guide/architecture)             | Project structure, agent loop, key classes                 |
+| [Contributing](https://arcen-cli.arcenpay.com/docs/developer-guide/contributing)             | Development setup, PR process, code style                  |
+| [CLI Reference](https://arcen-cli.arcenpay.com/docs/reference/cli-commands)                  | All commands and flags                                     |
+| [Environment Variables](https://arcen-cli.arcenpay.com/docs/reference/environment-variables) | Complete env var reference                                 |
 
 ---
 
@@ -154,12 +154,12 @@ See `arcen claw migrate --help` for all options, or use the `openclaw-migration`
 
 ## Contributing
 
-We welcome contributions! See the [Contributing Guide](https://arcen-agent.arcenpay.com/docs/developer-guide/contributing) for development setup, code style, and PR process.
+We welcome contributions! See the [Contributing Guide](https://arcen-cli.arcenpay.com/docs/developer-guide/contributing) for development setup, code style, and PR process.
 
 Quick start for contributors — clone and go with `setup-arcen.sh`:
 
 ```bash
-git clone https://github.com/arcenpay/arcen-agent.git
+git clone https://github.com/AdityaKumar41/arcen-agent.git
 cd arcen-agent
 ./setup-arcen.sh     # installs uv, creates venv, installs .[all], symlinks ~/.local/bin/arcen
 ./arcen              # auto-detects the venv, no need to `source` first
@@ -181,7 +181,7 @@ scripts/run_tests.sh
 
 - 🌐 [ArcenPay](https://arcenpay.com)
 - 📚 [Skills Hub](https://agentskills.io)
-- 🐛 [Issues](https://github.com/arcenpay/arcen-agent/issues)
+- 🐛 [Issues](https://github.com/AdityaKumar41/arcen-agent/issues)
 - 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Linux desktop-control MCP server for Arcen and other MCP hosts, with AT-SPI accessibility trees, Wayland/X11 input, screenshots, and compositor window targeting.
 - 🔌 [ArcenClaw](https://github.com/AaronWong1999/arcenclaw) — Community WeChat bridge: Run Arcen Agent and OpenClaw on the same WeChat account.
 

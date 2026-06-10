@@ -149,11 +149,11 @@ arcen webhook subscribe pr-review \
   --deliver github_comment
 ```
 
-Full automation templates gallery: [arcen-agent.arcenpay.com/docs/guides/automation-templates](https://arcen-agent.arcenpay.com/docs/guides/automation-templates)
+Full automation templates gallery: [arcen-cli.arcenpay.com/docs/guides/automation-templates](https://arcen-cli.arcenpay.com/docs/guides/automation-templates)
 
-Documentation: [arcen-agent.arcenpay.com](https://arcen-agent.arcenpay.com)
+Documentation: [arcen-cli.arcenpay.com](https://arcen-cli.arcenpay.com)
 
-GitHub: [github.com/arcenpay/arcen-agent](https://github.com/arcenpay/arcen-agent)
+GitHub: [github.com/AdityaKumar41/arcen-agent](https://github.com/AdityaKumar41/arcen-agent)
 
 ---
 

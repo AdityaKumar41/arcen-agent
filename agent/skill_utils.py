@@ -55,10 +55,21 @@ def is_excluded_skill_path(path) -> bool:
     Accepts a Path or string.
     """
     try:
-        parts = path.parts  # Path
+        parts = tuple(path.parts)  # Path
     except AttributeError:
         from pathlib import PurePath
-        parts = PurePath(str(path)).parts
+        parts = tuple(PurePath(str(path)).parts)
+
+    # Wheel installs place bundled skills under the active environment's data
+    # path, e.g. <venv>/skills/<category>/<skill>/SKILL.md. In that case a
+    # parent directory literally named "venv" must not hide all packaged
+    # skills. Once we can identify the skills root, only exclude components
+    # inside that tree.
+    for marker in ("skills", "optional-skills"):
+        if marker in parts:
+            root_index = len(parts) - 1 - parts[::-1].index(marker)
+            return any(part in EXCLUDED_SKILL_DIRS for part in parts[root_index + 1:])
+
     return any(part in EXCLUDED_SKILL_DIRS for part in parts)
 
 

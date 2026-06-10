@@ -79,7 +79,7 @@ def _discord_request(
         headers={
             "Authorization": f"Bot {token}",
             "Content-Type": "application/json",
-            "User-Agent": "Arcen-Agent (https://github.com/arcenpay/arcen-agent)",
+            "User-Agent": "Arcen-Agent (https://github.com/AdityaKumar41/arcen-agent)",
         },
     )
 

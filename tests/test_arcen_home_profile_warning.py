@@ -1,6 +1,6 @@
 """Tests for get_arcen_home() profile-mode fallback warning.
 
-Regression test for https://github.com/arcenpay/arcen-agent/issues/18594.
+Regression test for https://github.com/AdityaKumar41/arcen-agent/issues/18594.
 
 When ARCEN_HOME is unset but an active_profile file indicates a non-default
 profile is active, get_arcen_home() should:

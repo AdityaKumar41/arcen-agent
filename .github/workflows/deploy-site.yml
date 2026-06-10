@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'website/**'
+      - 'public/**'
       - 'skills/**'
       - 'optional-skills/**'
       - '.github/workflows/deploy-site.yml'
@@ -34,7 +35,7 @@ jobs:
         run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
 
   deploy-docs:
-    if: github.repository == 'arcenpay/arcen-agent'
+    if: github.repository == 'AdityaKumar41/arcen-agent'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -84,8 +85,9 @@ jobs:
         run: |
           mkdir -p _site/docs
           cp -r website/build/* _site/docs/
+          cp -r public/* _site/
           # llms.txt / llms-full.txt are also published at the site root
-          # (https://arcen-agent.arcenpay.com/llms.txt) because some
+          # (https://arcen-cli.arcenpay.com/llms.txt) because some
           # agents and IDE plugins probe the classic root-level path rather
           # than /docs/llms.txt. Same file, two URLs, one source of truth.
           if [ -f website/build/llms.txt ]; then

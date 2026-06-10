@@ -8,7 +8,7 @@ with HTTP 404. The dedicated check at arcen_cli/doctor.py already covers
 Anthropic with the right headers, so the pluggable profile must be
 skipped by `_build_apikey_providers_list()`.
 
-See: arcenpay/arcen-agent#22346
+See: AdityaKumar41/arcen-agent#22346
 """
 
 from __future__ import annotations

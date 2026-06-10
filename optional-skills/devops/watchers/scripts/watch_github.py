@@ -6,7 +6,7 @@ Usage (via cron with --no-agent):
     arcen cron create arcen-issues \\
       --schedule "*/5 * * * *" --no-agent \\
       --script "$ARCEN_HOME/skills/devops/watchers/scripts/watch_github.py" \\
-      --script-args "--name arcen-issues --repo arcenpay/arcen-agent --scope issues"
+      --script-args "--name arcen-issues --repo AdityaKumar41/arcen-agent --scope issues"
 
 Set GITHUB_TOKEN (or GH_TOKEN) in ~/.arcen/.env to avoid the 60 req/hr
 anonymous rate limit.

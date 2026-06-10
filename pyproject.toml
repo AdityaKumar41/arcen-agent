@@ -91,6 +91,12 @@ dependencies = [
   "pywinpty>=2.0.0,<3; sys_platform == 'win32'",
 ]
 
+[project.urls]
+Homepage = "https://arcen-cli.arcenpay.com"
+Documentation = "https://arcen-cli.arcenpay.com/docs/"
+Repository = "https://github.com/AdityaKumar41/arcen-agent"
+Issues = "https://github.com/AdityaKumar41/arcen-agent/issues"
+
 [project.optional-dependencies]
 # Native Anthropic provider — only needed when provider=anthropic (not via
 # OpenRouter or other aggregators).
@@ -249,15 +255,6 @@ arcen-acp = "acp_adapter.entry:main"
 
 [tool.setuptools]
 py-modules = ["run_agent", "model_tools", "toolsets", "batch_runner", "trajectory_compressor", "toolset_distributions", "cli", "arcen_bootstrap", "arcen_constants", "arcen_state", "arcen_time", "arcen_logging", "utils", "mcp_serve"]
-
-[tool.setuptools.data-files]
-# i18n catalogs. locales/ is a bare data directory (no __init__.py), so it is
-# neither a package (packages.find) nor package-data (which attaches to a
-# package). data-files ships it in the wheel; MANIFEST.in `graft locales`
-# ships it in the sdist. Without this, sealed installs (pip wheel, Nix store
-# venv) drop the catalogs and gateway/CLI commands surface raw i18n keys like
-# `gateway.reset.header_default` (#27632, #35374, #23943).
-locales = ["locales/*.yaml"]
 
 [tool.setuptools.package-data]
 arcen_cli = ["tui_dist/**/*", "scripts/install.sh", "scripts/install.ps1"]

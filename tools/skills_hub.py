@@ -3392,7 +3392,7 @@ def check_for_skill_updates(
 # Arcen centralized index source
 # ---------------------------------------------------------------------------
 
-ARCEN_INDEX_URL = "https://arcen-agent.arcenpay.com/docs/api/skills-index.json"
+ARCEN_INDEX_URL = "https://arcen-cli.arcenpay.com/docs/api/skills-index.json"
 ARCEN_INDEX_CACHE_FILE = INDEX_CACHE_DIR / "arcen-index.json"
 ARCEN_INDEX_TTL = 6 * 3600  # 6 hours
 

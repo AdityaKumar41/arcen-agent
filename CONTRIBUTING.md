@@ -81,7 +81,7 @@ This isn't a quality bar — it's a coupling-and-maintenance decision. Memory pr
 ### Clone and install
 
 ```bash
-git clone https://github.com/arcenpay/arcen-agent.git
+git clone https://github.com/AdityaKumar41/arcen-agent.git
 cd arcen-agent
 
 # Create venv with Python 3.11
@@ -194,7 +194,7 @@ arcen-agent/
 ├── skills/                   # Bundled skills (copied to ~/.arcen/skills/ on install)
 ├── optional-skills/          # Official optional skills (discoverable via hub, not activated by default)
 ├── tests/                    # Test suite
-├── website/                  # Documentation site (arcen-agent.arcenpay.com)
+├── website/                  # Documentation site (arcen-cli.arcenpay.com)
 │
 ├── cli-config.yaml.example   # Example configuration (copied to ~/.arcen/config.yaml)
 └── AGENTS.md                 # Development guide for AI coding assistants
@@ -901,7 +901,7 @@ test(tools): add unit tests for file_operations
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/arcenpay/arcen-agent/issues)
+- Use [GitHub Issues](https://github.com/AdityaKumar41/arcen-agent/issues)
 - Include: OS, Python version, Arcen version (`arcen version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates

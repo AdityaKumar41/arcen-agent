@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arcen Agent CLI</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #07111f;
+        color: #e0f2fe;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+      main {
+        width: min(760px, calc(100vw - 32px));
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(34px, 7vw, 72px);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+      p {
+        margin: 0 0 24px;
+        color: #93c5fd;
+        font-size: 18px;
+      }
+      section {
+        margin-top: 18px;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 14px;
+        color: #67e8f9;
+        text-transform: uppercase;
+        letter-spacing: 0;
+      }
+      pre {
+        margin: 0;
+        overflow-x: auto;
+        padding: 14px 16px;
+        border: 1px solid #1d4ed8;
+        background: #0f172a;
+        border-radius: 8px;
+        color: #bfdbfe;
+      }
+      code {
+        font: 15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      a {
+        color: #38bdf8;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Arcen Agent CLI</h1>
+      <p>Install the Arcen Agent command line tool and run setup.</p>
+
+      <section>
+        <h2>macOS, Linux, Termux</h2>
+        <pre><code>curl -fsSL https://arcen-cli.arcenpay.com/install.sh | bash</code></pre>
+      </section>
+
+      <section>
+        <h2>Windows PowerShell</h2>
+        <pre><code>iex (irm https://arcen-cli.arcenpay.com/install.ps1)</code></pre>
+      </section>
+
+      <section>
+        <h2>PyPI</h2>
+        <pre><code>pipx install arcen-agent
+arcen setup
+arcen</code></pre>
+      </section>
+    </main>
+  </body>
+</html>

@@ -6617,7 +6617,7 @@ def _update_via_zip(args):
         )
         sys.exit(1)
     zip_url = (
-        f"https://github.com/arcenpay/arcen-agent/archive/refs/heads/{branch}.zip"
+        f"https://github.com/AdityaKumar41/arcen-agent/archive/refs/heads/{branch}.zip"
     )
 
     print("→ Downloading latest version...")
@@ -7009,12 +7009,12 @@ def _discard_stashed_changes(
 # =========================================================================
 
 OFFICIAL_REPO_URLS = {
-    "https://github.com/arcenpay/arcen-agent.git",
-    "git@github.com:arcenpay/arcen-agent.git",
-    "https://github.com/arcenpay/arcen-agent",
-    "git@github.com:arcenpay/arcen-agent",
+    "https://github.com/AdityaKumar41/arcen-agent.git",
+    "git@github.com:AdityaKumar41/arcen-agent.git",
+    "https://github.com/AdityaKumar41/arcen-agent",
+    "git@github.com:AdityaKumar41/arcen-agent",
 }
-OFFICIAL_REPO_URL = "https://github.com/arcenpay/arcen-agent.git"
+OFFICIAL_REPO_URL = "https://github.com/AdityaKumar41/arcen-agent.git"
 SKIP_UPSTREAM_PROMPT_FILE = ".skip_upstream_prompt"
 
 
@@ -7148,7 +7148,7 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path) -> None:
         # Ask user if they want to add upstream
         print()
         print("ℹ Your fork is not tracking the official Arcen repository.")
-        print("  This means you may miss updates from arcenpay/arcen-agent.")
+        print("  This means you may miss updates from AdityaKumar41/arcen-agent.")
         print()
         try:
             response = (
@@ -7162,7 +7162,7 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path) -> None:
             print("→ Adding upstream remote...")
             if _add_upstream_remote(git_cmd, cwd):
                 print(
-                    "  ✓ Added upstream: https://github.com/arcenpay/arcen-agent.git"
+                    "  ✓ Added upstream: https://github.com/AdityaKumar41/arcen-agent.git"
                 )
                 has_upstream = True
             else:
@@ -7170,7 +7170,7 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path) -> None:
                 return
         else:
             print(
-                "  Skipped. Run 'git remote add upstream https://github.com/arcenpay/arcen-agent.git' to add later."
+                "  Skipped. Run 'git remote add upstream https://github.com/AdityaKumar41/arcen-agent.git' to add later."
             )
             _mark_skip_upstream_prompt()
             return
@@ -8856,7 +8856,7 @@ def _cmd_update_impl(args, gateway_mode: bool):
                 return
             print("✗ Not a git repository. Please reinstall:")
             print(
-                "  curl -fsSL https://arcen-agent.arcenpay.com/install.sh | bash"
+                "  curl -fsSL https://arcen-cli.arcenpay.com/install.sh | bash"
             )
             sys.exit(1)
 
@@ -11279,7 +11279,7 @@ def main():
             "Manage the fallback provider chain.  Fallback providers are tried "
             "in order when the primary model fails with rate-limit, overload, or "
             "connection errors.  See: "
-            "https://arcen-agent.arcenpay.com/docs/user-guide/features/fallback-providers"
+            "https://arcen-cli.arcenpay.com/docs/user-guide/features/fallback-providers"
         ),
     )
     fallback_subparsers = fallback_parser.add_subparsers(dest="fallback_command")
@@ -11313,7 +11313,7 @@ def main():
             "Pull API keys from an external secret manager at process startup "
             "instead of storing them in ~/.arcen/.env.  Currently supports "
             "Bitwarden Secrets Manager.  See: "
-            "https://arcen-agent.arcenpay.com/docs/user-guide/secrets/bitwarden"
+            "https://arcen-cli.arcenpay.com/docs/user-guide/secrets/bitwarden"
         ),
     )
     secrets_subparsers = secrets_parser.add_subparsers(dest="secrets_command")

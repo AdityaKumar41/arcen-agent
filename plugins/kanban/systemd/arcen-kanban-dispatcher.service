@@ -15,7 +15,7 @@
 
 [Unit]
 Description=Arcen Kanban dispatcher (DEPRECATED standalone daemon — prefer gateway-embedded dispatch)
-Documentation=https://arcen-agent.arcenpay.com/docs/user-guide/features/kanban
+Documentation=https://arcen-cli.arcenpay.com/docs/user-guide/features/kanban
 After=network.target
 
 [Service]

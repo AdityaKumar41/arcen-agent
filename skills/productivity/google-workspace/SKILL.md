@@ -13,7 +13,7 @@ required_credential_files:
 metadata:
   arcen:
     tags: [Google, Gmail, Calendar, Drive, Sheets, Docs, Contacts, Email, OAuth]
-    homepage: https://github.com/arcenpay/arcen-agent
+    homepage: https://github.com/AdityaKumar41/arcen-agent
     related_skills: [himalaya]
 ---
 

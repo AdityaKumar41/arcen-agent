@@ -1,28 +1,27 @@
-from __future__ import annotations
-
-from collections import defaultdict
 from pathlib import Path
 
 from setuptools import setup
 
 
-REPO_ROOT = Path(__file__).parent.resolve()
+def _data_tree(root: str) -> list[tuple[str, list[str]]]:
+    base = Path(root)
+    if not base.exists():
+        return []
+    return [
+        (str(path.parent), [str(path)])
+        for path in sorted(base.rglob("*"))
+        if path.is_file()
+    ]
 
 
-def _data_file_tree(root_name: str) -> list[tuple[str, list[str]]]:
-    root = REPO_ROOT / root_name
-    grouped: defaultdict[str, list[str]] = defaultdict(list)
-    for path in sorted(root.rglob("*")):
-        if not path.is_file():
-            continue
-        rel_path = path.relative_to(REPO_ROOT)
-        grouped[str(rel_path.parent)].append(str(rel_path))
-    return sorted(grouped.items())
-
-
+# These are bare data directories rather than import packages. They need to be
+# present in wheels as data_files so arcen_constants._get_packaged_data_dir()
+# can find them after pip/pipx installation.
 setup(
     data_files=[
-        *_data_file_tree("skills"),
-        *_data_file_tree("optional-skills"),
-    ]
+        *_data_tree("locales"),
+        *_data_tree("skills"),
+        *_data_tree("optional-skills"),
+        *_data_tree("public"),
+    ],
 )

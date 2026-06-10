@@ -2,10 +2,10 @@ class ArcenAgent < Formula
   include Language::Python::Virtualenv
 
   desc "Self-improving AI agent that creates skills from experience"
-  homepage "https://arcen-agent.arcenpay.com"
+  homepage "https://arcen-cli.arcenpay.com"
   # Stable source should point at the semver-named sdist asset attached by
   # scripts/release.py, not the CalVer tag tarball.
-  url "https://github.com/arcenpay/arcen-agent/releases/download/v2026.3.30/arcen_agent-0.6.0.tar.gz"
+  url "https://github.com/AdityaKumar41/arcen-agent/releases/download/v2026.3.30/arcen_agent-0.6.0.tar.gz"
   sha256 "<replace-with-release-asset-sha256>"
   license "MIT"
 

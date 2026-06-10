@@ -6,7 +6,7 @@ scope for vulnerability reports.
 
 ## 1. Reporting a Vulnerability
 
-Report privately via [GitHub Security Advisories](https://github.com/arcenpay/arcen-agent/security/advisories/new)
+Report privately via [GitHub Security Advisories](https://github.com/AdityaKumar41/arcen-agent/security/advisories/new)
 or **security@arcenpay.com**. Do not open public issues for
 security vulnerabilities. **Arcen Agent does not operate a bug
 bounty program.**
