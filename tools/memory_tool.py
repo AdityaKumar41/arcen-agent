@@ -28,7 +28,9 @@ import logging
 import os
 import tempfile
 import time
+import uuid
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from arcen_constants import get_arcen_home
 from typing import Dict, Any, List, Optional
@@ -55,6 +57,51 @@ logger = logging.getLogger(__name__)
 def get_memory_dir() -> Path:
     """Return the profile-scoped memories directory."""
     return get_arcen_home() / "memories"
+
+
+def get_memory_history_path() -> Path:
+    """Return the profile-scoped memory audit log path."""
+    return get_memory_dir() / "history.jsonl"
+
+
+def append_memory_history_event(
+    *,
+    action: str,
+    target: str,
+    old_content: Any = None,
+    new_content: Any = None,
+    actor: str = "agent",
+    source: str = "memory_tool",
+    session_id: str = "",
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Append an immutable memory mutation event.
+
+    The history log is best-effort: memory writes must not fail just because
+    audit logging hit a transient disk problem. Callers that need to surface
+    failures should validate the returned event and read logs.
+    """
+    event = {
+        "id": uuid.uuid4().hex,
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "actor": actor,
+        "source": source,
+        "action": action,
+        "target": target,
+        "old": old_content,
+        "new": new_content,
+        "session_id": session_id or "",
+        "metadata": metadata or {},
+    }
+    try:
+        path = get_memory_history_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
+    except Exception as e:
+        logger.warning("Failed to append memory history event: %s", e)
+    return event
+
 
 ENTRY_DELIMITER = "\n§\n"
 
@@ -121,11 +168,19 @@ class MemoryStore:
         Tool responses always reflect this live state.
     """
 
-    def __init__(self, memory_char_limit: int = 2200, user_char_limit: int = 1375):
+    def __init__(
+        self,
+        memory_char_limit: int = 2200,
+        user_char_limit: int = 1375,
+        history_actor: str = "agent",
+        history_source: str = "memory_tool",
+    ):
         self.memory_entries: List[str] = []
         self.user_entries: List[str] = []
         self.memory_char_limit = memory_char_limit
         self.user_char_limit = user_char_limit
+        self.history_actor = history_actor
+        self.history_source = history_source
         # Frozen snapshot for system prompt -- set once at load_from_disk()
         self._system_prompt_snapshot: Dict[str, str] = {"memory": "", "user": ""}
 
@@ -341,6 +396,14 @@ class MemoryStore:
             entries.append(content)
             self._set_entries(target, entries)
             self.save_to_disk(target)
+            append_memory_history_event(
+                action="add",
+                target=target,
+                old_content=None,
+                new_content=content,
+                actor=self.history_actor,
+                source=self.history_source,
+            )
 
         return self._success_response(target, "Entry added.")
 
@@ -382,6 +445,7 @@ class MemoryStore:
                 # All identical -- safe to replace just the first
 
             idx = matches[0][0]
+            old_content = entries[idx]
             limit = self._char_limit(target)
 
             # Check that replacement doesn't blow the budget
@@ -401,6 +465,14 @@ class MemoryStore:
             entries[idx] = new_content
             self._set_entries(target, entries)
             self.save_to_disk(target)
+            append_memory_history_event(
+                action="replace",
+                target=target,
+                old_content=old_content,
+                new_content=new_content,
+                actor=self.history_actor,
+                source=self.history_source,
+            )
 
         return self._success_response(target, "Entry replaced.")
 
@@ -434,9 +506,17 @@ class MemoryStore:
                 # All identical -- safe to remove just the first
 
             idx = matches[0][0]
-            entries.pop(idx)
+            old_content = entries.pop(idx)
             self._set_entries(target, entries)
             self.save_to_disk(target)
+            append_memory_history_event(
+                action="remove",
+                target=target,
+                old_content=old_content,
+                new_content=None,
+                actor=self.history_actor,
+                source=self.history_source,
+            )
 
         return self._success_response(target, "Entry removed.")
 
@@ -717,7 +797,5 @@ registry.register(
     check_fn=check_memory_requirements,
     emoji="🧠",
 )
-
-
 
 

@@ -1,0 +1,49 @@
+# Run Arcen in production
+
+Production Arcen deployments usually combine a long-running gateway, a stable working directory, profile-aware config, logs, and an update path.
+
+## Baseline checklist
+
+1. Install Arcen on the host or container.
+2. Set `terminal.cwd` to the workspace Arcen should operate inside.
+3. Configure providers and secrets with `arcen setup`.
+4. Start the gateway for remote access.
+5. Watch logs during rollout.
+
+```bash
+arcen setup
+arcen gateway setup
+arcen gateway start
+arcen logs --follow
+```
+
+## Profiles
+
+Profiles let you run separate homes for different roles, such as default, writer, admin, coder, or researcher. Each profile can have its own gateway connections and logs.
+
+For multi-gateway deployments, only one profile should dispatch kanban work:
+
+```yaml
+kanban:
+  dispatch_in_gateway: false
+```
+
+## Logs
+
+```bash
+arcen logs
+arcen logs --follow
+arcen logs --level warning
+```
+
+Logs are written under the active Arcen home:
+
+- `logs/agent.log`
+- `logs/errors.log`
+- `logs/gateway.log`
+
+## Container posture
+
+If you run Arcen in Docker, avoid giving the agent unrestricted network access when you do not need it. Use separated networks and an allowlisted proxy for outbound traffic where possible.
+
+See [Security model](/docs/deployment/security) for isolation notes.

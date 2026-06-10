@@ -7,12 +7,17 @@ the provider's config schema. Writes config to config.yaml + .env.
 
 from __future__ import annotations
 
+import difflib
+import json
 import os
+import subprocess
 import sys
 import shlex
+import tempfile
 from pathlib import Path
+from typing import Any
 
-from arcen_constants import get_arcen_home
+from arcen_constants import display_arcen_home, get_arcen_home
 from arcen_cli.secret_prompt import masked_secret_prompt
 
 
@@ -181,6 +186,424 @@ def _get_available_providers() -> list:
 
         results.append((name, setup_hint, provider))
     return results
+
+
+# ---------------------------------------------------------------------------
+# Built-in memory files: editor, audit history, restore
+# ---------------------------------------------------------------------------
+
+def _new_memory_store(*, history_actor: str = "agent", history_source: str = "memory_tool"):
+    """Create a MemoryStore using configured built-in memory limits."""
+    from arcen_cli.config import load_config
+    from tools.memory_tool import MemoryStore
+
+    config = load_config()
+    mem_config = config.get("memory", {}) if isinstance(config.get("memory"), dict) else {}
+    return MemoryStore(
+        memory_char_limit=mem_config.get("memory_char_limit", 2200),
+        user_char_limit=mem_config.get("user_char_limit", 1375),
+        history_actor=history_actor,
+        history_source=history_source,
+    )
+
+
+def _target_file(target: str) -> str:
+    return "USER.md" if target == "user" else "MEMORY.md"
+
+
+def _targets_from_arg(target: str) -> list[str]:
+    if target == "all":
+        return ["memory", "user"]
+    return [target]
+
+
+def _entry_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        from tools.memory_tool import ENTRY_DELIMITER
+
+        return ENTRY_DELIMITER.join(str(v) for v in value)
+    return str(value)
+
+
+def _load_history_events() -> list[dict[str, Any]]:
+    from tools.memory_tool import get_memory_history_path
+
+    path = get_memory_history_path()
+    if not path.exists():
+        return []
+    events: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict):
+            events.append(event)
+    return events
+
+
+def _find_history_event(event_id: str) -> dict[str, Any] | None:
+    matches = [e for e in _load_history_events() if str(e.get("id", "")).startswith(event_id)]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        print(f"  Event id prefix '{event_id}' is ambiguous. Use more characters.")
+    return None
+
+
+def _format_history_event(event: dict[str, Any]) -> str:
+    eid = str(event.get("id", ""))[:12]
+    ts = str(event.get("ts", ""))[:19]
+    action = event.get("action", "?")
+    target = event.get("target", "?")
+    actor = event.get("actor", "?")
+    new = _entry_text(event.get("new")).replace("\n", " ")
+    old = _entry_text(event.get("old")).replace("\n", " ")
+    preview = new or old
+    if len(preview) > 80:
+        preview = preview[:77] + "..."
+    return f"{eid}  {ts}  {actor}:{action}:{target}  {preview}"
+
+
+def _validate_entries(store, target: str, entries: list[str]) -> str | None:
+    from tools.memory_tool import ENTRY_DELIMITER, _scan_memory_content
+
+    cleaned = [str(e).strip() for e in entries if str(e).strip()]
+    total = len(ENTRY_DELIMITER.join(cleaned)) if cleaned else 0
+    limit = store._char_limit(target)
+    if total > limit:
+        return f"{target} memory would be {total:,}/{limit:,} chars. Shorten it first."
+    for entry in cleaned:
+        scan_error = _scan_memory_content(entry)
+        if scan_error:
+            return scan_error
+    return None
+
+
+def _write_entries_with_history(
+    *,
+    target: str,
+    entries: list[str],
+    action: str,
+    old_entries: list[str],
+    actor: str = "user",
+    source: str = "memory_cli",
+    metadata: dict[str, Any] | None = None,
+) -> None:
+    from tools.memory_tool import append_memory_history_event
+
+    store = _new_memory_store(history_actor="user", history_source="memory_cli")
+    cleaned = [str(e).strip() for e in entries if str(e).strip()]
+    error = _validate_entries(store, target, cleaned)
+    if error:
+        raise ValueError(error)
+
+    path = store._path_for(target)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with store._file_lock(path):
+        store._set_entries(target, cleaned)
+        store.save_to_disk(target)
+        append_memory_history_event(
+            action=action,
+            target=target,
+            old_content=old_entries,
+            new_content=cleaned,
+            actor=actor,
+            source=source,
+            metadata=metadata,
+        )
+
+
+def cmd_list(args) -> None:
+    """List built-in MEMORY.md / USER.md entries."""
+    store = _new_memory_store()
+    store.load_from_disk()
+    target = getattr(args, "target", "all")
+
+    for name in _targets_from_arg(target):
+        entries = store._entries_for(name)
+        current = store._char_count(name)
+        limit = store._char_limit(name)
+        print(f"\n{_target_file(name)} — {len(entries)} entries, {current:,}/{limit:,} chars")
+        print("─" * 40)
+        if not entries:
+            print("  (empty)")
+            continue
+        for idx, entry in enumerate(entries, 1):
+            print(f"{idx:>3}. {entry}")
+    print()
+
+
+def cmd_add(args) -> None:
+    """Add a built-in memory entry from the CLI."""
+    store = _new_memory_store(history_actor="user", history_source="memory_cli")
+    store.load_from_disk()
+    result = store.add(getattr(args, "target", "memory"), getattr(args, "content", ""))
+    if result.get("success"):
+        print(f"  ✓ {result.get('message', 'Entry added.')}")
+        print(f"  Usage: {result.get('usage')}")
+    else:
+        print(f"  ✗ {result.get('error', 'Failed to add entry.')}")
+
+
+def cmd_replace(args) -> None:
+    """Replace a built-in memory entry from the CLI."""
+    store = _new_memory_store(history_actor="user", history_source="memory_cli")
+    store.load_from_disk()
+    result = store.replace(
+        getattr(args, "target", "memory"),
+        getattr(args, "old_text", ""),
+        getattr(args, "content", ""),
+    )
+    if result.get("success"):
+        print(f"  ✓ {result.get('message', 'Entry replaced.')}")
+        print(f"  Usage: {result.get('usage')}")
+    else:
+        print(f"  ✗ {result.get('error', 'Failed to replace entry.')}")
+
+
+def cmd_remove(args) -> None:
+    """Remove a built-in memory entry from the CLI."""
+    store = _new_memory_store(history_actor="user", history_source="memory_cli")
+    store.load_from_disk()
+    result = store.remove(getattr(args, "target", "memory"), getattr(args, "old_text", ""))
+    if result.get("success"):
+        print(f"  ✓ {result.get('message', 'Entry removed.')}")
+        print(f"  Usage: {result.get('usage')}")
+    else:
+        print(f"  ✗ {result.get('error', 'Failed to remove entry.')}")
+
+
+def cmd_edit(args) -> None:
+    """Open a built-in memory file in the user's editor with validation/history."""
+    from tools.memory_tool import ENTRY_DELIMITER, MemoryStore
+
+    target = getattr(args, "target", "memory")
+    store = _new_memory_store()
+    path = MemoryStore._path_for(target)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    old_entries = MemoryStore._read_file(path)
+    initial = ENTRY_DELIMITER.join(old_entries)
+
+    editor = os.environ.get("VISUAL") or os.environ.get("EDITOR")
+    if not editor:
+        editor = "notepad" if os.name == "nt" else "vi"
+
+    fd, tmp = tempfile.mkstemp(
+        dir=str(path.parent),
+        prefix=f".{_target_file(target)}.",
+        suffix=".edit",
+        text=True,
+    )
+    tmp_path = Path(tmp)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(initial)
+            if initial and not initial.endswith("\n"):
+                f.write("\n")
+
+        code = subprocess.call(shlex.split(editor) + [str(tmp_path)])
+        if code != 0:
+            print(f"  Editor exited with status {code}; no memory changes saved.")
+            return
+
+        raw = tmp_path.read_text(encoding="utf-8")
+        new_entries = [e.strip() for e in raw.split(ENTRY_DELIMITER) if e.strip()]
+        if new_entries == old_entries:
+            print("  No memory changes.")
+            return
+
+        _write_entries_with_history(
+            target=target,
+            entries=new_entries,
+            action="edit",
+            old_entries=old_entries,
+        )
+        print(f"  ✓ Saved {_target_file(target)}")
+        print(f"  Entries: {len(old_entries)} → {len(new_entries)}")
+    finally:
+        try:
+            tmp_path.unlink()
+        except OSError:
+            pass
+
+
+def cmd_history(args) -> None:
+    """Show built-in memory audit history."""
+    events = _load_history_events()
+    target = getattr(args, "target", "all")
+    if target != "all":
+        events = [e for e in events if e.get("target") == target]
+
+    limit = max(1, int(getattr(args, "limit", 20)))
+    events = events[-limit:]
+    if getattr(args, "json", False):
+        print(json.dumps(events, ensure_ascii=False, indent=2))
+        return
+
+    print("\nMemory history")
+    print("─" * 40)
+    if not events:
+        print("  (no history yet)\n")
+        return
+    for event in events:
+        print(f"  {_format_history_event(event)}")
+    print()
+
+
+def cmd_diff(args) -> None:
+    """Show diffs for one memory history event or recent events."""
+    event_id = getattr(args, "event_id", None)
+    events = [_find_history_event(event_id)] if event_id else _load_history_events()[-max(1, int(getattr(args, "limit", 5))):]
+    events = [e for e in events if e]
+    if not events:
+        print("  No matching memory history events.")
+        return
+
+    for event in events:
+        before = _entry_text(event.get("old")).splitlines()
+        after = _entry_text(event.get("new")).splitlines()
+        print(f"\n{_format_history_event(event)}")
+        print("─" * 40)
+        diff = difflib.unified_diff(before, after, fromfile="before", tofile="after", lineterm="")
+        shown = False
+        for line in diff:
+            print(line)
+            shown = True
+        if not shown:
+            print("  (no textual diff)")
+    print()
+
+
+def cmd_restore(args) -> None:
+    """Restore/revert a built-in memory history event."""
+    event = _find_history_event(getattr(args, "event_id", ""))
+    if not event:
+        print("  No matching memory history event.")
+        return
+
+    target = event.get("target")
+    if target not in {"memory", "user"}:
+        print(f"  Cannot restore event target: {target!r}")
+        return
+
+    action = event.get("action")
+    store = _new_memory_store()
+    path = store._path_for(target)
+    current = store._read_file(path)
+    new_entries = list(current)
+
+    if action == "add":
+        added = str(event.get("new") or "").strip()
+        if added in new_entries:
+            new_entries.remove(added)
+        else:
+            print("  Added entry is no longer present; nothing to restore.")
+            return
+    elif action == "remove":
+        removed = str(event.get("old") or "").strip()
+        if removed and removed not in new_entries:
+            new_entries.append(removed)
+    elif action == "replace":
+        old = str(event.get("old") or "").strip()
+        new = str(event.get("new") or "").strip()
+        if new in new_entries:
+            new_entries[new_entries.index(new)] = old
+        else:
+            print("  Replacement entry is no longer present; refusing fuzzy restore.")
+            return
+    elif action in {"edit", "reset", "restore"}:
+        old_entries = event.get("old")
+        if not isinstance(old_entries, list):
+            print(f"  Event {action!r} does not include a restorable snapshot.")
+            return
+        new_entries = [str(e) for e in old_entries if str(e).strip()]
+    else:
+        print(f"  Restore does not know how to revert action {action!r}.")
+        return
+
+    if new_entries == current:
+        print("  Memory already matches the restored state.")
+        return
+
+    if not getattr(args, "yes", False):
+        print(f"\n  Restore event {_format_history_event(event)}")
+        print(f"  This will update {_target_file(target)}.")
+        try:
+            answer = input("  Type 'yes' to confirm: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print("\n  Cancelled.\n")
+            return
+        if answer != "yes":
+            print("  Cancelled.\n")
+            return
+
+    try:
+        _write_entries_with_history(
+            target=target,
+            entries=new_entries,
+            action="restore",
+            old_entries=current,
+            metadata={"restored_event_id": event.get("id"), "restored_action": action},
+        )
+    except ValueError as exc:
+        print(f"  ✗ {exc}")
+        return
+
+    print(f"  ✓ Restored {_target_file(target)} from event {str(event.get('id'))[:12]}")
+
+
+def cmd_reset(args) -> None:
+    """Erase built-in memory with audit snapshots."""
+    from tools.memory_tool import MemoryStore, append_memory_history_event
+
+    mem_dir = get_arcen_home() / "memories"
+    target = getattr(args, "target", "all")
+    targets = _targets_from_arg(target)
+    existing = []
+    for name in targets:
+        path = MemoryStore._path_for(name)
+        if path.exists():
+            existing.append((name, path, _target_file(name), MemoryStore._read_file(path)))
+
+    if not existing:
+        print(f"\n  Nothing to reset — no memory files found in {display_arcen_home()}/memories/\n")
+        return
+
+    print("\n  This will erase the following built-in memory files:")
+    for _name, path, filename, entries in existing:
+        size = path.stat().st_size
+        print(f"    - {filename} — {len(entries)} entries, {size:,} bytes")
+
+    if not getattr(args, "yes", False):
+        try:
+            answer = input("\n  Type 'yes' to confirm: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print("\n  Cancelled.\n")
+            return
+        if answer != "yes":
+            print("  Cancelled.\n")
+            return
+
+    mem_dir.mkdir(parents=True, exist_ok=True)
+    for name, path, filename, entries in existing:
+        path.unlink()
+        append_memory_history_event(
+            action="reset",
+            target=name,
+            old_content=entries,
+            new_content=[],
+            actor="user",
+            source="memory_cli",
+        )
+        print(f"  ✓ Deleted {filename}")
+
+    print(f"\n  Memory reset complete. Restore is available via `arcen memory history` + `arcen memory restore <event-id>`.")
+    print(f"  Files were in: {display_arcen_home()}/memories/\n")
 
 
 # ---------------------------------------------------------------------------
@@ -468,5 +891,23 @@ def memory_command(args) -> None:
             cmd_setup(args)
     elif sub == "status":
         cmd_status(args)
+    elif sub == "list":
+        cmd_list(args)
+    elif sub == "add":
+        cmd_add(args)
+    elif sub == "replace":
+        cmd_replace(args)
+    elif sub == "remove":
+        cmd_remove(args)
+    elif sub == "edit":
+        cmd_edit(args)
+    elif sub == "history":
+        cmd_history(args)
+    elif sub == "diff":
+        cmd_diff(args)
+    elif sub == "restore":
+        cmd_restore(args)
+    elif sub == "reset":
+        cmd_reset(args)
     else:
         cmd_status(args)

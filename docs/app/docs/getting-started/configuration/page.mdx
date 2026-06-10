@@ -1,0 +1,62 @@
+# Configuration
+
+Arcen keeps runtime behavior in YAML and secrets in an environment file. That split makes profiles portable while keeping API keys out of normal config diffs.
+
+## Files
+
+| File | Purpose |
+| --- | --- |
+| `~/.arcen/config.yaml` | User settings, profiles, tools, memory, gateway, cron, display, and providers. |
+| `~/.arcen/.env` | API keys, tokens, passwords, and other secrets only. |
+| `~/.arcen/logs/agent.log` | Agent runtime log. |
+| `~/.arcen/logs/errors.log` | Warnings and errors. |
+| `~/.arcen/logs/gateway.log` | Gateway log when the messaging gateway is running. |
+
+Profiles are resolved through `get_arcen_home()`, so profile-aware paths can point to different homes instead of hardcoding `~/.arcen`.
+
+## Loaders
+
+Arcen has three configuration paths:
+
+| Loader | Used by | Location |
+| --- | --- | --- |
+| `load_cli_config()` | Interactive CLI | `cli.py` |
+| `load_config()` | `arcen tools`, `arcen setup`, and subcommands | `arcen_cli/config.py` |
+| Direct YAML read | Gateway runtime | `gateway/run.py` and `gateway/config.py` |
+
+If a new setting appears in the CLI but not in the gateway, check which loader owns that path.
+
+## Where settings belong
+
+Use `config.yaml` for non-secret values:
+
+```yaml
+terminal:
+  cwd: /srv/arcen/workspace
+
+display:
+  skin: slate
+
+memory:
+  provider: honcho
+```
+
+Use `.env` for secrets:
+
+```bash
+OPENAI_API_KEY=...
+TELEGRAM_BOT_TOKEN=...
+SLACK_BOT_TOKEN=...
+```
+
+<Callout type="warning" title="Do not move behavior into .env">
+  Timeouts, paths, feature flags, display preferences, and tool defaults belong in `config.yaml`. Keep `.env` for credentials.
+</Callout>
+
+## Adding a config key
+
+1. Add the default value to `DEFAULT_CONFIG` in `arcen_cli/config.py`.
+2. Add setup or CLI handling only if users need to edit it interactively.
+3. Bump `_config_version` only for migrations that rename or transform existing user config.
+
+New keys in existing sections are merged automatically and do not need a version bump.

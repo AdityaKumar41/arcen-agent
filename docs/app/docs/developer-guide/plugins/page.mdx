@@ -1,0 +1,35 @@
+# Plugins
+
+Arcen has several plugin surfaces. General plugins use `PluginManager`, memory providers use the memory provider interface, and model providers use lazy `ProviderProfile` discovery.
+
+## General plugins
+
+General plugins can register:
+
+- Lifecycle hooks such as `pre_tool_call`, `post_tool_call`, `pre_llm_call`, and `post_llm_call`.
+- New tools with `ctx.register_tool(...)`.
+- CLI subcommands with `ctx.register_cli_command(...)`.
+
+Discovery happens through `arcen_cli/plugins.py` and is triggered as a side effect of importing `model_tools.py`.
+
+## Memory plugins
+
+Memory plugins implement `MemoryProvider` and are orchestrated by `agent/memory_manager.py`.
+
+Built-in memory providers are closed to new in-tree additions. Publish new memory backends as standalone plugin repositories or pip entry points.
+
+## Model-provider plugins
+
+Model providers live under `plugins/model-providers/<name>`. Each plugin registers a `ProviderProfile`.
+
+Discovery order:
+
+1. Bundled providers in the repo.
+2. User providers under `$ARCEN_HOME/plugins/model-providers/<name>`.
+3. Legacy providers under `providers/<name>.py`.
+
+User plugins of the same name override bundled providers.
+
+<Callout type="warning" title="Do not hardcode plugin behavior">
+  If a plugin needs a capability, expand the generic plugin surface instead of adding plugin-specific branches to core files.
+</Callout>

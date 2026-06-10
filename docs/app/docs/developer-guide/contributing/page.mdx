@@ -1,0 +1,41 @@
+# Contributing
+
+Use the existing setup scripts and test runner so your environment matches the repository.
+
+## Local setup
+
+```bash
+git clone https://github.com/AdityaKumar41/arcen-agent.git
+cd arcen-agent
+./setup-arcen.sh
+./arcen
+```
+
+Manual path:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv .venv --python 3.11
+source .venv/bin/activate
+uv pip install -e ".[all,dev]"
+scripts/run_tests.sh
+```
+
+## Test commands
+
+```bash
+scripts/run_tests.sh
+scripts/run_tests.sh tests/path/to/test_file.py -q
+```
+
+The test runner probes `.venv`, `venv`, then `$HOME/.arcen/arcen-agent/venv`.
+
+## Dependency rules
+
+Python dependencies must be pinned intentionally. Current core dependencies are exact-pinned in `pyproject.toml`; extras follow the repo policy in the surrounding comments.
+
+For GitHub Actions, pin actions to commit SHAs and keep a version comment.
+
+## Review posture
+
+Keep changes scoped, do not revert unrelated work, and prefer local patterns over new abstractions. Add tests when behavior, contracts, or user-facing workflows change.

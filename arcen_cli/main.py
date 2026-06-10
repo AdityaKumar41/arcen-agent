@@ -12942,12 +12942,15 @@ Examples:
     # =========================================================================
     memory_parser = subparsers.add_parser(
         "memory",
-        help="Configure external memory provider",
+        help="Manage built-in memory and optional external providers",
         description=(
-            "Set up and manage external memory provider plugins.\n\n"
+            "Inspect and edit built-in MEMORY.md/USER.md, review memory "
+            "history, restore changes, and optionally configure external "
+            "memory provider plugins.\n\n"
             "Available providers: honcho, openviking, mem0, hindsight,\n"
             "holographic, retaindb, byterover.\n\n"
-            "Only one external provider can be active at a time.\n"
+            "External providers are optional. Only one external provider "
+            "can be active at a time.\n"
             "Built-in memory (MEMORY.md/USER.md) is always active."
         ),
     )
@@ -12962,10 +12965,109 @@ Examples:
         help="Provider to configure directly (e.g. honcho), skipping the picker",
     )
     memory_sub.add_parser("status", help="Show current memory provider config")
+    _list_parser = memory_sub.add_parser(
+        "list",
+        help="List built-in memory entries",
+    )
+    _list_parser.add_argument(
+        "--target",
+        choices=["all", "memory", "user"],
+        default="all",
+        help="Which store to list",
+    )
+    _add_parser = memory_sub.add_parser("add", help="Add a built-in memory entry")
+    _add_parser.add_argument("content", help="Entry content")
+    _add_parser.add_argument(
+        "--target",
+        choices=["memory", "user"],
+        default="memory",
+        help="Which store to add to",
+    )
+    _replace_parser = memory_sub.add_parser(
+        "replace",
+        help="Replace a built-in memory entry",
+    )
+    _replace_parser.add_argument("old_text", help="Unique substring to replace")
+    _replace_parser.add_argument("content", help="Replacement entry content")
+    _replace_parser.add_argument(
+        "--target",
+        choices=["memory", "user"],
+        default="memory",
+        help="Which store to update",
+    )
+    _remove_parser = memory_sub.add_parser(
+        "remove",
+        help="Remove a built-in memory entry",
+    )
+    _remove_parser.add_argument("old_text", help="Unique substring to remove")
+    _remove_parser.add_argument(
+        "--target",
+        choices=["memory", "user"],
+        default="memory",
+        help="Which store to update",
+    )
+    _edit_parser = memory_sub.add_parser(
+        "edit",
+        help="Open MEMORY.md or USER.md in $EDITOR with validation",
+    )
+    _edit_parser.add_argument(
+        "--target",
+        choices=["memory", "user"],
+        default="memory",
+        help="Which store to edit",
+    )
+    _history_parser = memory_sub.add_parser(
+        "history",
+        help="Show built-in memory audit history",
+    )
+    _history_parser.add_argument(
+        "--target",
+        choices=["all", "memory", "user"],
+        default="all",
+        help="Which store to show",
+    )
+    _history_parser.add_argument(
+        "--limit",
+        type=int,
+        default=20,
+        help="Number of history events to show",
+    )
+    _history_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print raw history events as JSON",
+    )
+    _diff_parser = memory_sub.add_parser(
+        "diff",
+        help="Show the diff for memory history events",
+    )
+    _diff_parser.add_argument(
+        "event_id",
+        nargs="?",
+        default=None,
+        help="History event id or unique prefix",
+    )
+    _diff_parser.add_argument(
+        "--limit",
+        type=int,
+        default=5,
+        help="Recent events to diff when no event id is given",
+    )
+    _restore_parser = memory_sub.add_parser(
+        "restore",
+        help="Restore or revert a built-in memory history event",
+    )
+    _restore_parser.add_argument("event_id", help="History event id or unique prefix")
+    _restore_parser.add_argument(
+        "--yes",
+        "-y",
+        action="store_true",
+        help="Skip confirmation prompt",
+    )
     memory_sub.add_parser("off", help="Disable external provider (built-in only)")
     _reset_parser = memory_sub.add_parser(
         "reset",
-        help="Erase all built-in memory (MEMORY.md and USER.md)",
+        help="Erase built-in memory with a restorable history snapshot",
     )
     _reset_parser.add_argument(
         "--yes",
@@ -12992,51 +13094,6 @@ Examples:
             save_config(config)
             print("\n  ✓ Memory provider: built-in only")
             print("  Saved to config.yaml\n")
-        elif sub == "reset":
-            from arcen_constants import get_arcen_home, display_arcen_home
-
-            mem_dir = get_arcen_home() / "memories"
-            target = getattr(args, "target", "all")
-            files_to_reset = []
-            if target in {"all", "memory"}:
-                files_to_reset.append(("MEMORY.md", "agent notes"))
-            if target in {"all", "user"}:
-                files_to_reset.append(("USER.md", "user profile"))
-
-            # Check what exists
-            existing = [
-                (f, desc) for f, desc in files_to_reset if (mem_dir / f).exists()
-            ]
-            if not existing:
-                print(
-                    f"\n  Nothing to reset — no memory files found in {display_arcen_home()}/memories/\n"
-                )
-                return
-
-            print(f"\n  This will permanently erase the following memory files:")
-            for f, desc in existing:
-                path = mem_dir / f
-                size = path.stat().st_size
-                print(f"    ◆ {f} ({desc}) — {size:,} bytes")
-
-            if not getattr(args, "yes", False):
-                try:
-                    answer = input("\n  Type 'yes' to confirm: ").strip().lower()
-                except (EOFError, KeyboardInterrupt):
-                    print("\n  Cancelled.\n")
-                    return
-                if answer != "yes":
-                    print("  Cancelled.\n")
-                    return
-
-            for f, desc in existing:
-                (mem_dir / f).unlink()
-                print(f"  ✓ Deleted {f} ({desc})")
-
-            print(
-                f"\n  Memory reset complete. New sessions will start with a blank slate."
-            )
-            print(f"  Files were in: {display_arcen_home()}/memories/\n")
         else:
             from arcen_cli.memory_setup import memory_command
 
