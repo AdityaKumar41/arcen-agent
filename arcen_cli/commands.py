@@ -195,6 +195,12 @@ COMMAND_REGISTRY: list[CommandDef] = [
                subcommands=("connect", "disconnect", "status")),
     CommandDef("plugins", "List installed plugins and their status",
                "Tools & Skills", cli_only=True),
+    CommandDef("reach-setup", "Set up Agent-Reach internet channels (Twitter, Reddit, Bilibili, etc.)",
+               "Tools & Skills", aliases=("reach_setup",),
+               args_hint="[twitter|reddit|bilibili|youtube|github|rss|all]",
+               subcommands=("twitter", "reddit", "bilibili", "youtube", "github", "rss", "all")),
+    CommandDef("reach-doctor", "Run Agent-Reach channel health check (shows backend status + fixes)",
+               "Tools & Skills", aliases=("reach_doctor",)),
 
     # Info
     CommandDef("commands", "Browse all commands and skills (paginated)", "Info",

@@ -5905,9 +5905,126 @@ class ArcenCLI:
         killed = process_registry.kill_all()
         print(f"  ✅ Stopped {killed} process(es).")
 
+    def _handle_reach_setup_command(self, cmd_original: str) -> None:
+        """Handle /reach-setup [platform] — guided Agent-Reach channel setup wizard."""
+        import shutil, subprocess, sys
+
+        parts = cmd_original.strip().split(None, 2)
+        platform = parts[1].lower() if len(parts) > 1 else "all"
+
+        _PLATFORM_GUIDES = {
+            "twitter": (
+                "🐦  Twitter / X Setup\n"
+                "─────────────────────────────────\n"
+                "1. Log in to twitter.com in your browser\n"
+                "2. Install Cookie-Editor: https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm\n"
+                "3. Click Cookie-Editor → Export → 'Netscape' format → Copy\n"
+                "4. Save the clipboard content to: ~/.config/twitter-cookies.txt\n"
+                "5. Run:  twitter config set cookies ~/.config/twitter-cookies.txt\n"
+                "6. Test: twitter user @twitter\n"
+                "\n⚠️  Use a dedicated alt account — not your main account."
+            ),
+            "reddit": (
+                "📖  Reddit Setup\n"
+                "─────────────────────────────────\n"
+                "Option A — OpenCLI (desktop, reuses browser session — recommended):\n"
+                "  pip install opencli\n"
+                "  opencli reddit login\n\n"
+                "Option B — rdt-cli (headless / server):\n"
+                "  pip install rdt-cli\n"
+                "  1. Log in to reddit.com in browser\n"
+                "  2. Export cookies with Cookie-Editor (Netscape format)\n"
+                "  3. rdt config set cookies ~/.config/reddit-cookies.txt\n"
+                "  4. Test: rdt post https://www.reddit.com/r/python/top"
+            ),
+            "bilibili": (
+                "📺  Bilibili Setup\n"
+                "─────────────────────────────────\n"
+                "bili-cli works without login for search and public video info.\n\n"
+                "Install:\n"
+                "  pip install bili-cli\n\n"
+                "Test:\n"
+                "  bili search 'Python tutorial' --limit 5\n\n"
+                "⚠️  Do NOT use yt-dlp for Bilibili — it is 412-blocked. Always use bili."
+            ),
+            "youtube": (
+                "📺  YouTube Setup\n"
+                "─────────────────────────────────\n"
+                "Zero config — yt-dlp handles YouTube without login.\n\n"
+                "Install (if missing):\n"
+                "  pip install yt-dlp\n\n"
+                "Keep updated (YouTube changes frequently):\n"
+                "  pip install -U yt-dlp\n\n"
+                "Test:\n"
+                "  yt-dlp --write-subs --write-auto-subs --sub-lang en --skip-download \\\n"
+                "         -o /tmp/test 'https://youtube.com/watch?v=dQw4w9WgXcQ'"
+            ),
+            "github": (
+                "📦  GitHub Setup\n"
+                "─────────────────────────────────\n"
+                "Public repos work immediately with gh CLI.\n\n"
+                "Install gh CLI:\n"
+                "  macOS:   brew install gh\n"
+                "  Linux:   sudo apt install gh\n"
+                "  Windows: winget install GitHub.cli\n\n"
+                "Authenticate (for private repos, fork, issue creation):\n"
+                "  gh auth login\n\n"
+                "Test:\n"
+                "  gh repo view fastapi/fastapi"
+            ),
+            "rss": (
+                "📡  RSS Setup\n"
+                "─────────────────────────────────\n"
+                "Zero config — feedparser handles any public RSS/Atom feed.\n\n"
+                "Install (if missing):\n"
+                "  pip install feedparser\n\n"
+                "Test:\n"
+                "  python3 -c \"import feedparser; f=feedparser.parse('https://hnrss.org/frontpage'); print(f.entries[0].title)\""
+            ),
+        }
+
+        if platform == "all":
+            print("🌍  Agent-Reach — Internet Capability Layer\n")
+            print("Install (if not already done):")
+            print("  pip install https://github.com/Panniantong/agent-reach/archive/main.zip")
+            print("  agent-reach install\n")
+            print("Platforms you can set up:\n")
+            for name, guide in _PLATFORM_GUIDES.items():
+                first_line = guide.split("\n")[0]
+                print(f"  /reach-setup {name:<12}  {first_line}")
+            print("\nRun /reach-doctor to check channel health after setup.")
+            return
+
+        guide = _PLATFORM_GUIDES.get(platform)
+        if not guide:
+            known = ", ".join(_PLATFORM_GUIDES.keys())
+            print(f"Unknown platform '{platform}'. Known: {known}")
+            return
+
+        print(f"\n{guide}\n")
+        print("After setup, run /reach-doctor to verify.")
+
+    def _handle_reach_doctor_command(self) -> None:
+        """Handle /reach-doctor — run agent-reach doctor and print live output."""
+        import shutil, subprocess
+
+        if not shutil.which("agent-reach"):
+            print("agent-reach is not installed.\n")
+            print("Install it with:")
+            print("  pip install https://github.com/Panniantong/agent-reach/archive/main.zip")
+            print("  agent-reach install")
+            return
+
+        print("🩺  Running agent-reach doctor...\n")
+        try:
+            subprocess.run(["agent-reach", "doctor"], check=False)
+        except Exception as exc:
+            print(f"agent-reach doctor failed: {exc}")
+
     def _handle_agents_command(self):
         """Handle /agents — show background processes and agent status."""
         from tools.process_registry import format_uptime_short, process_registry
+
 
         processes = process_registry.list_sessions()
         running = [p for p in processes if p.get("status") == "running"]
@@ -9055,6 +9172,10 @@ class ArcenCLI:
                         print(f"  {status} {p['name']}{version}{detail}{error}")
             except Exception as e:
                 print(f"Plugin system error: {e}")
+        elif canonical in ("reach-setup", "reach_setup"):
+            self._handle_reach_setup_command(cmd_original)
+        elif canonical in ("reach-doctor", "reach_doctor"):
+            self._handle_reach_doctor_command()
         elif canonical == "rollback":
             self._handle_rollback_command(cmd_original)
         elif canonical == "snapshot":

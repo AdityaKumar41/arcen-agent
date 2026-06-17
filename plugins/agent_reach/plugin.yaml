@@ -1,0 +1,20 @@
+name: agent_reach
+version: 1.0.0
+description: >
+  Agent-Reach — gives Arcen eyes to see the entire internet.
+  Read & search Twitter/X, Reddit, YouTube, GitHub, Bilibili, RSS, and any
+  webpage via zero-config backends. Free, no API keys required for core
+  channels. Cookie-based access unlocks social platforms (Twitter, Reddit).
+  Run `reach_doctor` to health-check all channels.
+author: Arcen + Panniantong/Agent-Reach
+kind: backend
+provides_tools:
+  - reach_web_read
+  - reach_youtube
+  - reach_github
+  - reach_rss
+  - reach_bilibili
+  - reach_search
+  - reach_twitter
+  - reach_reddit
+  - reach_doctor

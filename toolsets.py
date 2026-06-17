@@ -322,6 +322,42 @@ TOOLSETS = {
         "includes": []
     },
 
+    "reach": {
+        "description": (
+            "Agent-Reach — internet capability layer. Read & search YouTube, GitHub, "
+            "Bilibili, RSS feeds, and any webpage via zero-config backends (yt-dlp, "
+            "gh CLI, bili-cli, Jina Reader, Exa search). Free, no API keys required. "
+            "Smart URL routing: reach_web_read auto-selects the best channel per domain. "
+            "Run reach_doctor to health-check all channels. "
+            "Requires: pip install https://github.com/Panniantong/agent-reach/archive/main.zip"
+        ),
+        "tools": [
+            "reach_web_read",
+            "reach_youtube",
+            "reach_github",
+            "reach_rss",
+            "reach_bilibili",
+            "reach_search",
+            "reach_doctor",
+        ],
+        "includes": [],
+    },
+
+    "reach_social": {
+        "description": (
+            "Agent-Reach social platform tools — Twitter/X and Reddit. "
+            "Cookie/auth required for each platform. "
+            "Twitter: export cookies via Cookie-Editor extension, configure with twitter-cli. "
+            "Reddit: use OpenCLI (desktop, reuses browser) or rdt-cli (cookie-based for servers). "
+            "Use reach_doctor to diagnose auth issues."
+        ),
+        "tools": [
+            "reach_twitter",
+            "reach_reddit",
+        ],
+        "includes": [],
+    },
+
 
     # Scenario-specific toolsets
     
