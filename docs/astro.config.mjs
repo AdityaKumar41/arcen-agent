@@ -5,6 +5,11 @@ import { defineConfig } from "astro/config";
 export default defineConfig({
   integrations: [mdx()],
   output: "static",
+  markdown: {
+    shikiConfig: {
+      theme: "github-light"
+    }
+  },
   vite: {
     plugins: [tailwindcss()]
   }

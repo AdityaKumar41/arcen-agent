@@ -1,48 +1,111 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
-title: Tools
-description: Toolsets, terminal backends, and approvals.
+title: Tool Registry & Integrations
+description: Registry-backed tool creation, environments setup, requirements checking, and approvals.
 ---
 
 import Callout from "../../../components/Callout.astro";
 
-# Tools
+# Tool Registry & Integrations
 
-Tools are registered through `tools/registry.py`, discovered by `model_tools.py`, and exposed through toolsets in `toolsets.py`.
+Arcen Agent uses a centralized registry to discover, validate, and execute tools. System tools can be constrained to isolated terminal sandboxes and configured to require user confirmation before executing.
 
-## Default path for new tools
+---
 
-For local or custom tools, prefer a plugin under `~/.arcen/plugins/<name>` instead of editing Arcen core. Plugins can register tools through `ctx.register_tool(...)` and can be enabled or disabled without changing built-in toolsets.
+## 1. Creating a Built-in Tool
 
-Use core tools only when the tool should ship in the base system.
-
-## Core tool checklist
-
-1. Create `tools/your_tool.py`.
-2. Register the schema and handler with `registry.register(...)`.
-3. Return a JSON string from the handler.
-4. Add the tool name to `_ARCEN_CORE_TOOLS` or another toolset in `toolsets.py`.
-5. Use `get_arcen_home()` for state and `display_arcen_home()` for path text in schemas.
+Core tools are placed in the `tools/` directory. Any file that invokes `registry.register()` at import time is automatically discovered by the framework:
 
 ```python
+# tools/math_helper.py
+import json
 from tools.registry import registry
 
+def check_requirements() -> bool:
+    """Verifies that dependency libraries or commands exist on host."""
+    return True
+
+def run_calculation(expression: str) -> str:
+    # Tool logic goes here
+    result = eval(expression) # Example only
+    return json.dumps({"result": result})
+
 registry.register(
-    name="example_tool",
-    toolset="example",
+    name="run_calculation",
+    toolset="utility",
     schema={
-        "name": "example_tool",
-        "description": "Do one specific thing.",
-        "parameters": {"type": "object", "properties": {}},
+        "name": "run_calculation",
+        "description": "Evaluate math equations dynamically.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "expression": {"type": "string", "description": "Formula to compute"}
+            },
+            "required": ["expression"]
+        }
     },
-    handler=lambda args, **kw: '{"success": true}',
+    handler=lambda args, **kw: run_calculation(args.get("expression", "")),
+    check_fn=check_requirements,
 )
 ```
 
-<Callout type="warning" title="Toolset exposure is required">
-  Auto-discovery imports the module and registers the schema. The tool is exposed to agents only when its name appears in a toolset.
-</Callout>
+---
 
-## Agent-level tools
+## 2. Requirements Checking & Environment Variable Verification
 
-Some tools are intercepted by `run_agent.py` before normal function dispatch. `tools/todo_tool.py` is the reference pattern for agent-level behavior.
+Tools often depend on third-party APIs or external binaries. You can configure requirements checks directly in the registration schema:
+
+- **`check_fn`**: A callable function that returns `True` if requirements are satisfied, or `False` otherwise. If `False`, the tool is omitted from the schemas exposed to the LLM.
+- **`requires_env`**: A list of environment variable names (e.g. `["GITHUB_TOKEN"]`). If any environment variables in the list are missing, the tool is disabled automatically.
+
+```python
+registry.register(
+    name="post_tweet",
+    toolset="social",
+    schema={...},
+    handler=lambda args, **kw: post_tweet(args.get("text")),
+    requires_env=["TWITTER_API_KEY", "TWITTER_API_SECRET"],
+)
+```
+
+---
+
+## 3. Toolset Exposure
+
+Registering a tool makes it importable, but does **not** expose it to the agent by default. To make a tool available to the agent, its name must be added to a toolset list in `toolsets.py`:
+
+```python
+# toolsets.py
+_ARCEN_CORE_TOOLS = [
+    "list_dir",
+    "view_file",
+    "replace_file_content",
+    "run_command",
+    "run_calculation", # Newly exposed tool
+]
+```
+
+---
+
+## 4. Sandbox Backends & Approvals
+
+To protect your host environment, Arcen supports multiple execution backends (Docker, SSH, Singularity, Daytona, Modal) to isolate commands. 
+
+You can configure execution security levels in `~/.arcen/config.yaml` under `security.approvals`:
+
+```yaml
+security:
+  approvals:
+    command: ask         # Prompt user for permission (Yes/No) before running shell commands
+    write_file: allow    # Allow the agent to write files automatically without prompting
+    unsandboxed: deny    # Completely block execution of unsandboxed host commands
+    read_file: allow
+```
+
+---
+
+## 5. Agent-Level Tools
+
+Certain tools do not execute scripts, but instead interact directly with the agent's internal state (such as todo items or persistent context files). These tools are intercepted in `run_agent.py` before hitting standard function call dispatchers.
+
+For example, `tools/todo_tool.py` manages a session-specific task list that is appended to the system prompts at each step.

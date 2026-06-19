@@ -21,12 +21,14 @@ const {
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="/banner.png" />
-    <link rel="icon" href="/banner.png" />
+    <meta property="og:image" content="/icon.svg" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen bg-arcen-950 text-zinc-100 antialiased selection:bg-white selection:text-arcen-950">
-    <div class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.09),transparent_34rem)]"></div>
+  <body class="min-h-screen bg-[#000] text-zinc-100 antialiased selection:bg-white selection:text-arcen-950 relative">
     <SiteHeader />
     <slot />
   </body>

@@ -1,62 +1,114 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
-title: Architecture
-description: Agent loop, tool registry, CLI, gateway, and TUI.
+title: Architecture Guide
+description: Technical architecture of Arcen Agent, the execution loop, file dependency chains, and transport mechanics.
 ---
 
-# Architecture
+import Callout from "../../../components/Callout.astro";
 
-Arcen is centered on a synchronous agent loop in `run_agent.py`, a registry-backed tool system, and multiple entry points that share the same underlying session and tool behavior.
+# Architecture Guide
 
-## Key files
+This document describes the architectural flow of Arcen Agent, detailing how the agent loop executes tools, resolves dependencies, and communicates across processes.
 
-| File | Role |
-| --- | --- |
-| `run_agent.py` | `AIAgent`, conversation loop, budget handling, callbacks, and agent-level tools. |
-| `model_tools.py` | Tool orchestration, discovery, and function-call handling. |
-| `toolsets.py` | Toolset definitions and `_ARCEN_CORE_TOOLS`. |
-| `cli.py` | Interactive CLI orchestration. |
-| `arcen_state.py` | SQLite session store with FTS5 search. |
-| `arcen_cli/commands.py` | Central slash-command registry. |
-| `gateway/run.py` | Messaging gateway runtime and dispatch. |
-| `ui-tui` | Ink terminal UI. |
-| `tui_gateway` | Python JSON-RPC backend for the TUI. |
+---
 
-## Dependency chain
+## 1. File Dependency Chain
+
+Arcen uses an import-time registration pattern to load tools. This ensures that adding a new tool requires no changes to core orchestrators.
 
 ```text
-tools/registry.py
-  -> tools/*.py
-  -> model_tools.py
-  -> run_agent.py, cli.py, batch_runner.py, environments
+┌──────────────────┐
+│  tools/registry  │  (Defines registry container; has no dependencies)
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│   tools/*.py     │  (Import-time registry.register() calls register schemas)
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│   model_tools    │  (Triggers auto-discovery imports and handles execution)
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│    AIAgent,      │  (AIAgent, CLI, gateway platforms inherit schemas
+│   CLI, Gateway   │   and invoke handlers via model_tools)
+└──────────────────┘
 ```
 
-## Agent loop
+---
 
-The core loop calls the selected provider, dispatches tool calls, appends tool results, and stops when the model returns final content or the budget is exhausted.
+## 2. The Core AIAgent Loop (`run_agent.py`)
+
+The conversational loop resides inside `AIAgent.run_conversation()` in `run_agent.py`. It is entirely synchronous and runs inside an iteration budget wrapper.
+
+Here is a simplified representation of the loop execution:
 
 ```python
-while api_call_count < self.max_iterations:
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=tool_schemas,
-    )
-    if response.tool_calls:
-        for tool_call in response.tool_calls:
-            result = handle_function_call(tool_call.name, tool_call.args, task_id)
-            messages.append(tool_result_message(result))
-    else:
-        return response.content
+def run_conversation(self, user_message: str):
+    messages = [{"role": "user", "content": user_message}]
+    api_call_count = 0
+
+    while (api_call_count < self.max_iterations and self.iteration_budget.remaining > 0) \
+            or self._budget_grace_call:
+        
+        # Check if the user requested an interrupt (e.g. Ctrl+C in CLI)
+        if self._interrupt_requested:
+            break
+            
+        # 1. Fetch completion from model provider
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            tools=self.get_tool_schemas()
+        )
+        
+        # 2. Extract and print reasoning content if present
+        if hasattr(response, "reasoning_content") and response.reasoning_content:
+            self.display_reasoning(response.reasoning_content)
+            
+        # 3. Handle Tool calls
+        if response.tool_calls:
+            for tool_call in response.tool_calls:
+                # Executes tool and returns JSON string wrapper
+                result_str = handle_function_call(
+                    tool_call.name, 
+                    tool_call.args, 
+                    task_id=self.task_id
+                )
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": result_str
+                })
+            api_call_count += 1
+        else:
+            # 4. Return final content output when no tool calls are returned
+            return response.content
 ```
 
-## TUI process model
+### Budget & Interrupt Handling
+- **Grace Call**: If the agent runs out of iterations while in the middle of executing a critical file modification, the loop is granted one single grace API call (`self._budget_grace_call`) to cleanly commit and wrap up before halting.
+- **SQLite State Recording**: Every message and tool output is immediately serialized and persisted to the SQLite database via `SessionDB` to prevent loss on unexpected shutdowns.
+
+---
+
+## 3. TUI stdio JSON-RPC Transport
+
+The modern TUI (`ui-tui`) runs as a Node.js process rendering React components using the Ink library. It starts a persistent Python subprocess running `tui_gateway/server.py`.
 
 ```text
-Node Ink UI
-  stdio JSON-RPC
-Python tui_gateway
-  AIAgent + tools + sessions
+┌───────────────────────┐                    ┌───────────────────────┐
+│     Node (Ink UI)     │                    │  Python tui_gateway   │
+│                       ├───────────────────►│                       │
+│  e.g. prompt.submit   │   JSON-RPC over   │  e.g. AIAgent.chat()  │
+│                       │       stdio        │                       │
+│  ◄────────────────────┤                    │◄──────────────────────┤
+│  message.delta events │                    │  tool.start events    │
+└───────────────────────┘                    └───────────────────────┘
 ```
 
-TypeScript owns rendering and interaction. Python owns model calls, sessions, tools, and slash-command dispatch.
+- **Transport**: Communication happens entirely over stdio. Commands and events are serialized as single-line, newline-terminated JSON-RPC payloads.
+- **Slash command fallbacks**: Built-in commands like `/clear` or `/quit` are intercepted locally by TypeScript. Any unrecognized slash commands are forwarded down to the Python gateway CLI parser to ensure complete command parity.

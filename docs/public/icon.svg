@@ -1,0 +1,9 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect fill="#000000" width="180" height="180" rx="37" />
+  <!-- Top Circle (Vibrant Blue) -->
+  <circle cx="79" cy="91" r="17" fill="#0090ff" />
+  <!-- Bottom Circle (White) -->
+  <circle cx="67" cy="115" r="20" fill="#ffffff" />
+  <!-- Slanted Bar (White) -->
+  <path d="M72 48H95L127 132H104L72 48Z" fill="#ffffff" />
+</svg>

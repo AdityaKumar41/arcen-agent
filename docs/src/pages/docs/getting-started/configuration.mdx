@@ -1,70 +1,131 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
-title: Configuration
-description: Profiles, providers, config files, and secrets.
+title: Configuration Reference
+description: Comprehensive details on config.yaml options, profiles, env variables, and directory rules.
 ---
 
 import Callout from "../../../components/Callout.astro";
 
-# Configuration
+# Configuration Reference
 
-Arcen keeps runtime behavior in YAML and secrets in an environment file. That split makes profiles portable while keeping API keys out of normal config diffs.
+Arcen splits its settings into two locations: non-secret behaviors live in `config.yaml`, while API keys and connection secrets live in `.env`.
 
-## Files
+---
 
-| File | Purpose |
-| --- | --- |
-| `~/.arcen/config.yaml` | User settings, profiles, tools, memory, gateway, cron, display, and providers. |
-| `~/.arcen/.env` | API keys, tokens, passwords, and other secrets only. |
-| `~/.arcen/logs/agent.log` | Agent runtime log. |
-| `~/.arcen/logs/errors.log` | Warnings and errors. |
-| `~/.arcen/logs/gateway.log` | Gateway log when the messaging gateway is running. |
+## 1. File Locations & Profiles
 
-Profiles are resolved through `get_arcen_home()`, so profile-aware paths can point to different homes instead of hardcoding `~/.arcen`.
+By default, files are placed in the `~/.arcen` directory. However, Arcen dynamically resolves paths through `get_arcen_home()`. You can change profiles using the `ARCEN_PROFILE` env variable to run isolated workspaces:
 
-## Loaders
+- **Default Home**: `~/.arcen`
+- **Settings**: `~/.arcen/config.yaml`
+- **Secrets**: `~/.arcen/.env`
+- **Logs Directory**: `~/.arcen/logs/` (stores `agent.log`, `errors.log`, and `gateway.log`)
 
-Arcen has three configuration paths:
+---
 
-| Loader | Used by | Location |
-| --- | --- | --- |
-| `load_cli_config()` | Interactive CLI | `cli.py` |
-| `load_config()` | `arcen tools`, `arcen setup`, and subcommands | `arcen_cli/config.py` |
-| Direct YAML read | Gateway runtime | `gateway/run.py` and `gateway/config.py` |
+## 2. Configuration Sections (`config.yaml`)
 
-If a new setting appears in the CLI but not in the gateway, check which loader owns that path.
-
-## Where settings belong
-
-Use `config.yaml` for non-secret values:
+Below is the structure of `~/.arcen/config.yaml` with explanations of key configuration parameters:
 
 ```yaml
+# Active model configuration
+model:
+  provider: openrouter
+  model: anthropic/claude-3.5-sonnet
+  temperature: 0.2
+  max_tokens: 4096
+
+# Agent execution options
+agent:
+  max_iterations: 90               # Max tool iterations per prompt
+  quiet_mode: false
+  save_trajectories: true          # Save conversation files under .system_generated/logs
+
+# Terminal execution options
 terminal:
-  cwd: /srv/arcen/workspace
+  cwd: /Users/aditya/Coding/workspace # Default directory for tool execution
+  backend: local                   # local, docker, ssh, modal, daytona, singularity
+  timeout_seconds: 300             # Max duration for running child terminal scripts
 
+# Visual CLI display themes
 display:
-  skin: slate
+  skin: default                    # default, ares, mono, slate, cyberpunk
+  tool_progress_command: true
 
+# Conversation context compression
+compression:
+  enabled: true
+  trigger_threshold_tokens: 12000  # Compress context when history exceeds this limit
+
+# Pluggable memory configuration
 memory:
-  provider: honcho
+  provider: honcho                 # honcho, mem0, supermemory
+  disable_context_files: false     # Skip loading project instruction context files
+
+# Security & Approvals
+security:
+  approvals:
+    write_file: ask                # ask, allow, deny
+    command: ask
+    unsandboxed: ask
+    read_file: allow
+
+# Background tasks & schedulers
+cron:
+  enabled: true
+  check_interval_seconds: 60
+
+# Curator configurations (Background maintenance)
+curator:
+  enabled: true
+  interval_hours: 24
+  min_idle_hours: 4
+  stale_after_days: 30
 ```
 
-Use `.env` for secrets:
+---
 
-```bash
-OPENAI_API_KEY=...
-TELEGRAM_BOT_TOKEN=...
-SLACK_BOT_TOKEN=...
+## 3. Secrets & API Keys (`.env`)
+
+Secrets must be declared in `~/.arcen/.env`. Arcen parses this file during runtime and populates system environment variables. 
+
+To register a new secret for a custom tool or provider, add it to `OPTIONAL_ENV_VARS` in `arcen_cli/config.py`:
+
+```python
+"OPENWEATHER_API_KEY": {
+    "description": "API key for querying local weather data",
+    "prompt": "OpenWeather API Token",
+    "url": "https://openweathermap.org/api",
+    "password": true,
+    "category": "tool",
+}
 ```
 
-<Callout type="warning" title="Do not move behavior into .env">
-  Timeouts, paths, feature flags, display preferences, and tool defaults belong in `config.yaml`. Keep `.env` for credentials.
+Common environment variables:
+- `OPENAI_API_KEY`: OpenAI model execution.
+- `ANTHROPIC_API_KEY`: Anthropic endpoint access.
+- `TELEGRAM_BOT_TOKEN`: Connection token for Telegram gateway.
+- `SLACK_BOT_TOKEN`: Token for Slack platform bot.
+
+---
+
+## 4. Working Directory Rules
+
+Arcen resolves its working directory strictly using the following hierarchy:
+
+1. **CLI Mode**: Uses the current terminal directory (`os.getcwd()`).
+2. **Messaging Gateway**: Uses the `terminal.cwd` value defined in `config.yaml`. The gateway automatically bridges this value to the `TERMINAL_CWD` environment variable for all child processes and tool executions.
+
+<Callout type="warning" title="MESSAGING_CWD is deprecated">
+  The environment variable `MESSAGING_CWD` is removed. Defining it in your `.env` will print a deprecation warning at startup. Always use `terminal.cwd` in `config.yaml` to specify the workspace.
 </Callout>
 
-## Adding a config key
+---
 
-1. Add the default value to `DEFAULT_CONFIG` in `arcen_cli/config.py`.
-2. Add setup or CLI handling only if users need to edit it interactively.
-3. Bump `_config_version` only for migrations that rename or transform existing user config.
+## 5. Adding & Migrating Configuration Keys
 
-New keys in existing sections are merged automatically and do not need a version bump.
+If you are developing a new feature and need to introduce a settings key:
+
+1. Open `arcen_cli/config.py` and add the default settings configuration block into `DEFAULT_CONFIG`.
+2. If you need to transform or rename old configurations, bump the integer `_config_version` at the top of the file to trigger migrations.
+3. Adding new keys to existing dictionaries does **not** require a version bump; the configuration loader automatically performs a deep-merge at startup.

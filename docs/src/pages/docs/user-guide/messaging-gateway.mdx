@@ -1,60 +1,94 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
-title: Messaging gateway
-description: Connect Arcen to chat platforms and remote workflows.
+title: Messaging Gateway Guide
+description: In-depth setup for Telegram, Slack, platform adapters, CWD routing, and slash command gating.
 ---
 
 import Callout from "../../../components/Callout.astro";
 
-# Messaging gateway
+# Messaging Gateway Guide
 
-The gateway lets you talk to Arcen from messaging platforms while the agent runs on a server, workstation, or cloud machine.
+The Arcen messaging gateway allows you to control and interact with your AI agent remotely via chat applications (Telegram, Slack, Discord, Signal, etc.) while it runs securely on your host machine or server.
 
-## Supported surfaces
+---
 
-The repository includes adapters for Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Mattermost-style flows, Email, SMS, DingTalk, WeCom, Weixin, Feishu, QQ Bot, BlueBubbles, Yuanbao, webhook, API server, and Home Assistant.
+## 1. Supported Platforms & Adapters
 
-Gateway platform code lives in `gateway/platforms`.
+Gateway platform adapters reside in `gateway/platforms/`. Each platform implements a unified adapter interface handling incoming messages, routing commands, and streaming back responses.
 
-## Start setup
+The gateway supports:
+- **Telegram**: Supports bot polling or webhooks. Configured with a `TELEGRAM_BOT_TOKEN`.
+- **Slack**: Integrates via Socket Mode or HTTP webhooks. Configured with `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN`.
+- **Discord**: Logged in via bot websocket tokens.
+- **WhatsApp / Signal / Matrix**: Matrix homeserver endpoints and local Signal CLI socket wrappers.
+- **Webhooks & HTTP API**: Exposes an HTTP endpoint to trigger agents from systems like Home Assistant.
+
+---
+
+## 2. Setting Up a Platform
+
+To set up a messaging connection, run the gateway wizard:
 
 ```bash
 arcen gateway setup
+```
+
+The wizard prompts you for target platforms and saves the credentials into your `~/.arcen/.env` file. For example, a typical Telegram configurations block in `.env` looks like:
+
+```bash
+TELEGRAM_BOT_TOKEN=1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ
+TELEGRAM_ALLOWED_USER_IDS=987654321,11223344
+```
+
+To run the gateway listener process:
+
+```bash
 arcen gateway start
 ```
 
-Run logs while testing:
+---
 
-```bash
-arcen logs --follow --level info
-```
+## 3. Working Directory & Tool Bridging
 
-## Working directory
-
-Messaging sessions use `terminal.cwd` from `~/.arcen/config.yaml`:
+Because the messaging gateway runs as a background process independent of your active shell, it resolves execution paths using `config.yaml`:
 
 ```yaml
+# ~/.arcen/config.yaml
 terminal:
-  cwd: /srv/arcen/workspace
+  cwd: /Users/aditya/Coding/workspace
 ```
 
-The gateway bridges this into child tool environments as `TERMINAL_CWD`.
+At startup, the gateway bridges `terminal.cwd` to the `TERMINAL_CWD` environment variable. Any child terminal tools spawned by the agent will automatically execute in this path.
 
-<Callout type="warning" title="MESSAGING_CWD is removed">
-  Do not configure `MESSAGING_CWD` in `.env`. Use `terminal.cwd` in `config.yaml`.
+<Callout type="warning" title="MESSAGING_CWD is Deprecated">
+  The environment variable `MESSAGING_CWD` has been removed. Ensure you do not set it in `.env`. Path configuration must be defined inside `terminal.cwd` in your `config.yaml`.
 </Callout>
 
-## Gateway slash commands
+---
 
-The gateway shares canonical slash command names through `arcen_cli/commands.py`. Some commands are CLI-only by default but can be exposed in the gateway with a `gateway_config_gate`.
+## 4. Gateway Slash Commands & Config Gating
 
-## Multiple gateways
+By default, slash commands (such as `/compress`, `/usage`, etc.) are processed by the central command registry. 
 
-You can run multiple gateway processes, one per profile. Only one process should own kanban dispatch:
+However, some commands are CLI-only unless enabled via a config gate:
+- Config gating uses the `gateway_config_gate` attribute on a `CommandDef`.
+- For example, if a command has `gateway_config_gate: "display.tool_progress_command"`, the gateway will block execution of that command unless `display.tool_progress_command` is set to `true` in your `config.yaml`.
+- Config-gated commands are loaded in `GATEWAY_KNOWN_COMMANDS` so the parser can identify them, but they are filtered out of help outputs unless their gate is active.
+
+---
+
+## 5. Running Multiple Gateway Sessions
+
+You can run multiple gateway processes by defining separate config homes using profiles. Ensure that only one profile manages active task distribution to prevent conflict:
 
 ```yaml
+# Profile 1 (Main Task Dispatcher)
+kanban:
+  dispatch_in_gateway: true
+
+# Profile 2 (Worker Session)
 kanban:
   dispatch_in_gateway: false
 ```
 
-Keep `dispatch_in_gateway: true` only on the profile that owns dispatching.
+Keep `dispatch_in_gateway: true` enabled only on a single, primary coordinator session.

@@ -1,75 +1,127 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
 title: Quickstart
-description: Install, configure, and start a first Arcen session.
+description: Detailed guide to install, configure, and start your first Arcen session.
 ---
 
 import Callout from "../../../components/Callout.astro";
 
 # Quickstart
 
-Use this path when you want a local Arcen install, a first model configured, and an interactive session running.
+Use this guide to install Arcen Agent on your system, configure a model provider, and start an interactive terminal session.
 
-## Install
+---
 
-On Linux, macOS, WSL2, or Termux:
+## 1. Installation
+
+On Linux, macOS, WSL2, or Termux, run the one-click installer:
 
 ```bash
 curl -fsSL https://arcen-cli.arcenpay.com/install.sh | bash
 ```
 
-On native Windows PowerShell:
+On native Windows PowerShell (Administrator mode recommended):
 
 ```powershell
 iex (irm https://arcen-cli.arcenpay.com/install.ps1)
 ```
 
-The installer handles Python, uv, Node.js, ripgrep, ffmpeg, and the shell support needed by Arcen tools.
+### What the installer does
+The installer sets up a local virtual environment and checks for system requirements:
+- Installs Python 3.10+ (if missing)
+- Installs `uv` for lightning-fast package management and resolution
+- Configures system tools (`ripgrep` for grep search, `Node.js` for TUI rendering)
+- Adds `arcen` binary to your shell's user path.
 
-## Start Arcen
+---
 
-Reload your shell, then start the CLI:
+## 2. Shell Activation
+
+Reload your terminal settings or start a new terminal shell to pick up the updated path:
 
 ```bash
+# For bash users:
 source ~/.bashrc
-arcen
+
+# For zsh users:
+source ~/.zshrc
+
+# For fish users:
+source ~/.config/fish/config.fish
 ```
 
-If you use zsh:
+To confirm the command is active, verify the version:
 
 ```bash
-source ~/.zshrc
-arcen
+arcen --version
 ```
 
-## Run setup
+---
 
-Inside or outside the interactive CLI, run:
+## 3. Configuration & Model Setup
+
+To interact with an LLM, you must configure a model provider. Start by running the interactive setup wizard:
 
 ```bash
 arcen setup
-arcen model
+```
+
+The wizard will guide you through setting up:
+- Default LLM Provider (e.g. OpenAI, OpenRouter, Anthropic, Ollama)
+- Base URL and Model Selection
+- Storage and Memory provider backends (e.g. Honcho)
+- Access keys (keys are securely appended to `~/.arcen/.env` to keep secrets clean)
+
+### Quick model switching
+You can switch the active session model at any time from your command line:
+
+```bash
+arcen model openai:gpt-4o
+arcen model openrouter:anthropic/claude-3.5-sonnet
+```
+
+### Configuring Toolsets
+Enable or disable terminal tool groups to specify what the agent can run:
+
+```bash
 arcen tools
 ```
 
-`arcen setup` walks through provider credentials, memory, gateway options, and common defaults. `arcen model` changes the active provider and model. `arcen tools` lets you enable or disable toolsets.
+---
 
-<Callout type="info" title="Secrets stay out of config">
-  API keys and tokens belong in `~/.arcen/.env`. Non-secret behavior belongs in `~/.arcen/config.yaml`.
-</Callout>
+## 4. Diagnostics & Troubleshooting
 
-## First useful commands
+To make sure your environment is fully ready and has correct tool dependencies, run the doctor subcommand:
 
 ```bash
-arcen              # Start an interactive session
-arcen doctor       # Diagnose local setup issues
-arcen logs         # Browse runtime logs
-arcen gateway      # Manage messaging gateway setup and runtime
-arcen update       # Update the installed CLI
+arcen doctor
 ```
 
-## Next steps
+This runs a suite of checks:
+- Verifies package versions in `.venv`
+- Verifies API keys in `~/.arcen/.env`
+- Probes container runtimes (e.g., Docker, Singularity) for sandbox backend execution
+- Checks accessibility of required tools (e.g., `git`, `npm`, `tar`).
 
-- Use [CLI and TUI](/docs/user-guide/cli) for local workflows.
-- Use [Messaging gateway](/docs/user-guide/messaging-gateway) for Telegram, Discord, Slack, WhatsApp, Signal, and related adapters.
-- Use [Configuration](/docs/getting-started/configuration) to understand profiles, logs, and provider settings.
+---
+
+## 5. Basic Commands Cheat Sheet
+
+Here are the most common commands you will use to operate Arcen:
+
+| Command | Action |
+| --- | --- |
+| `arcen` | Launches the interactive prompt-toolkit CLI session. |
+| `arcen --tui` | Launches the modern Ink-based Terminal UI. |
+| `arcen logs --follow` | Follows the agent activity feeds in real-time. |
+| `arcen doctor` | Diagnoses local setup and environment issues. |
+| `arcen gateway start` | Starts the background messaging gateway listener. |
+| `arcen update` | Fetches and installs the latest version of Arcen Agent. |
+
+---
+
+## Next Steps
+
+- Explore the [Configuration](/docs/getting-started/configuration) page to customize profiles and path overlays.
+- Learn about the interactive [CLI and TUI](/docs/user-guide/cli) surfaces.
+- Read how to set up the remote [Messaging gateway](/docs/user-guide/messaging-gateway).

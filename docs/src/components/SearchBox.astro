@@ -32,21 +32,21 @@ const searchIndex = flatNavItems.map(item => ({
   data-search-index={JSON.stringify(searchIndex)}
 >
   <label class="sr-only" for={id}>Search documentation</label>
-  <div class="flex h-12 min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.025] px-5 text-lg text-zinc-400 shadow-sm transition focus-within:border-white/25 focus-within:bg-white/[0.045]">
-    <Icon name="search" class="size-5 shrink-0 text-zinc-500" />
+  <div class="flex h-9 min-w-0 items-center gap-2.5 rounded-none border border-white/10 bg-white/[0.025] px-3 text-sm text-zinc-400 shadow-sm transition focus-within:border-[#0029ff] focus-within:bg-white/[0.045] font-mono">
+    <Icon name="search" class="size-4 shrink-0 text-zinc-500" />
     <input
       id={id}
       data-search-input
       type="search"
       autocomplete="off"
       placeholder="Search..."
-      class="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-zinc-500"
+      class="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-500"
     />
-    <kbd class="rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-sm text-zinc-500 max-sm:hidden">⌘K</kbd>
+    <kbd class="rounded-none border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-zinc-500 max-sm:hidden">⌘K</kbd>
   </div>
 
   <div
-    class="absolute left-0 right-0 top-14 z-50 hidden overflow-hidden rounded-2xl border border-white/10 bg-[#111] shadow-soft"
+    class="absolute left-0 right-0 top-11 z-50 hidden overflow-hidden rounded-none border border-white/10 bg-[#0d0d0d] shadow-soft"
     data-search-panel
   >
     <div class="max-h-[430px] overflow-y-auto p-2" data-search-results></div>
@@ -89,10 +89,10 @@ const searchIndex = flatNavItems.map(item => ({
         ? matches
             .map(
               (item: SearchItem) => `
-                <a href="${item.href}" class="block rounded-xl px-4 py-3 transition hover:bg-white/[0.06]" data-search-result>
-                  <span class="block text-sm font-semibold text-white">${item.title}</span>
-                  <span class="mt-1 block text-xs text-zinc-500">${item.group}</span>
-                  <span class="mt-1 block text-sm leading-6 text-zinc-400">${item.description}</span>
+                <a href="${item.href}" class="block rounded-none px-4 py-3 transition hover:bg-white/[0.06] border-l-2 border-l-transparent hover:border-l-[#0029ff]" data-search-result>
+                  <span class="block text-sm font-semibold text-white font-mono">${item.title}</span>
+                  <span class="mt-1 block text-xs text-zinc-500 font-mono">${item.group}</span>
+                  <span class="mt-1 block text-sm leading-6 text-zinc-400 font-mono">${item.description}</span>
                 </a>
               `
             )
@@ -103,6 +103,7 @@ const searchIndex = flatNavItems.map(item => ({
     };
 
     input.addEventListener("focus", () => render(input.value));
+    input.addEventListener("click", () => render(input.value));
     input.addEventListener("input", () => render(input.value));
     input.addEventListener("keydown", event => {
       if (event.key === "Escape") {

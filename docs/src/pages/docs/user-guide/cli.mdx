@@ -1,81 +1,116 @@
 ---
 layout: ../../../layouts/DocsLayout.astro
-title: CLI and TUI
-description: Terminal workflows, commands, and sessions.
+title: CLI & TUI User Guide
+description: Detailed guide to interactive CLI commands, TUI process layers, and local development.
 ---
 
 import Callout from "../../../components/Callout.astro";
 
-# CLI and TUI
+# CLI & TUI User Guide
 
-The CLI is the default way to use Arcen locally. It provides slash commands, model switching, session management, autocomplete, tool progress, and log access. The TUI is an Ink-based terminal interface that can replace the classic prompt-toolkit experience.
+Arcen Agent supports two local interface modes: a classic interactive CLI built with `prompt_toolkit` and `Rich`, and an Ink-based TUI.
 
-## Start a session
+---
+
+## 1. CLI Commands & Slash Commands
+
+Launch the classic interactive session:
 
 ```bash
 arcen
 ```
 
-Useful commands:
+### Slash Command Registry
+All slash commands are registered centrally as `CommandDef` entries in `arcen_cli/commands.py`. This ensures autocomplete, help pages, Slack routing, and Telegram menus stay in sync automatically.
 
-| Command | Purpose |
-| --- | --- |
-| `arcen model` | Choose a provider and model. |
-| `arcen tools` | Configure enabled toolsets. |
-| `arcen setup` | Run the setup wizard. |
-| `arcen doctor` | Diagnose local problems. |
-| `arcen logs --follow` | Tail logs while testing behavior. |
+To add or modify a command:
+1. Define a `CommandDef` in `arcen_cli/commands.py`:
+   ```python
+   CommandDef(
+       name="background",
+       description="Put the current task in the background",
+       category="Session",
+       aliases=("bg", "detach"),
+       args_hint="[task_id]",
+   )
+   ```
+2. Add a command handler in `ArcenCLI.process_command()` in `cli.py`:
+   ```python
+   elif canonical == "background":
+       self._handle_background(cmd_original)
+   ```
+3. If the command runs remotely, register its handler in `gateway/run.py` as well.
 
-## Slash commands
+### Common Slash Commands
 
-Slash commands are defined centrally in `arcen_cli/commands.py`. The CLI, gateway help, Telegram menu, Slack routing, and autocomplete all derive from the same registry.
+| Command | Category | Description |
+| --- | --- | --- |
+| `/new` (or `/reset`) | Session | Reset the conversation history and start a new session. |
+| `/model [provider:model]` | Session | Switch model and provider for the active session. |
+| `/usage` | Session | View current token counts and budget limits. |
+| `/skills` | Tools | List available built-in and optional skills. |
+| `/skin [name]` | Config | Switch the active terminal visual theme. |
+| `/quit` | Exit | Terminate the CLI. |
 
-Common commands:
+---
 
-| Command | Use |
-| --- | --- |
-| `/new` or `/reset` | Start a fresh conversation. |
-| `/model [provider:model]` | Change model for the active session. |
-| `/retry` | Retry the last turn. |
-| `/undo` | Remove the last turn. |
-| `/compress` | Compress conversation context. |
-| `/usage` | Show context and usage details. |
-| `/skills` | Browse or load skills. |
+## 2. TUI Architecture
 
-## TUI
-
-Run the TUI with:
+The Terminal User Interface (TUI) replaces the classic prompt-toolkit shell. Launch it with:
 
 ```bash
 arcen --tui
-```
-
-or:
-
-```bash
+# or
 ARCEN_TUI=1 arcen
 ```
 
-The process model is:
+### Process Model
+The TUI is structured as two separate processes communicating over standard input/output:
 
 ```text
-arcen --tui
-  Node Ink UI
-    stdio JSON-RPC
-  Python tui_gateway
-    AIAgent, sessions, tools, slash commands
+┌────────────────────────────────┐
+│         Node (Ink UI)          │   TypeScript owns the screen, rendering
+│   (Transcripts, Prompts, etc.) │   the transcript, composer, and status logs.
+└───────────────┬────────────────┘
+                │
+         stdio JSON-RPC
+                │
+┌───────────────▼────────────────┐
+│      Python (tui_gateway)      │   Python manages AIAgent iterations, session DB
+│   (AIAgent, Tools, Sessions)   │   records, tool registry checks, and LLM calls.
+└────────────────────────────────┘
 ```
 
-## Local TUI development
+---
 
+## 3. Local TUI Development
+
+The TUI is built using React, Ink, and TypeScript in the `ui-tui` directory.
+
+### Development Commands
 ```bash
 cd ui-tui
-npm install
-npm run dev
-npm run type-check
-npm test
+npm install        # Install Node dependencies
+npm run dev        # Run in watch mode (compiles ink and updates on change)
+npm run build      # Full production build compiling assets
+npm run type-check # Run TypeScript checks without building
+npm test           # Execute Vitest test suites
 ```
 
-<Callout type="tip" title="Thin route roots">
-  TUI route roots should compose views and shell. Shared state belongs in nanostores near the feature or in `src/store`.
-</Callout>
+### TypeScript and State Style Rules
+
+When developing for the TUI, follow these architectural constraints:
+
+- **State Management**: Use small, focused `nanostores` rather than monolithic React component state when state is shared or accessed by distant components.
+- **Store Subscriptions**: Components rendering from an atom should use `useStore(atom)`. Pure logic handlers should read state using `$atom.get()` instead of subscribing.
+- **Asynchronous Handlers**: Async UI triggers should return void explicitly:
+  ```typescript
+  onClick={() => void save()}
+  ```
+- **Type Interfaces**: Prefer `interface` rather than type intersections for public component props:
+  ```typescript
+  interface ButtonProps extends React.ComponentProps<'button'> {
+    variant?: 'primary' | 'secondary';
+  }
+  ```
+- **Routing & Routing Roots**: Keep route entry files thin. They are controllers for composing child routes and layout shells; business logic belongs in separate packages.

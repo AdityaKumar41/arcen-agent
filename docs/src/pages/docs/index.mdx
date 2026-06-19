@@ -1,40 +1,67 @@
 ---
 layout: ../../layouts/DocsLayout.astro
 title: Introduction
-description: What Arcen is and how to start using it.
+description: Detailed introduction to Arcen Agent, its dialectic learning loop, and core architecture.
 ---
 
 import Callout from "../../components/Callout.astro";
 
 # Introduction
 
-Arcen Agent is a tool-calling AI agent with a terminal interface, messaging gateway, persistent memory, skills, model-provider plugins, scheduled jobs, and multiple terminal backends.
+Arcen Agent is a next-generation, self-improving AI agent framework designed to execute, deploy, and scale autonomous workflows. Unlike traditional one-shot LLM runners, Arcen uses a **Dialectic Learning Loop** that evaluates run-time outputs, adapts procedural behavior, and remembers interactions across execution boundaries.
 
-<Callout type="tip" title="Best first path">
-  Start with the quickstart, then read the CLI or messaging gateway page depending on where you want to use Arcen first.
+<Callout type="tip" title="Getting Started">
+  If you want to jump straight into configuring and running Arcen locally, head over to the [Quickstart](/docs/getting-started/quickstart) page.
 </Callout>
 
-## What Arcen gives you
+---
 
-| Area | What it does |
-| --- | --- |
-| CLI and TUI | Interactive terminal sessions, slash commands, model switching, history, and streaming tool output. |
-| Messaging gateway | Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Email, SMS, webhook, and API server adapters. |
-| Tools | Registry-backed tool discovery with toolsets, approvals, and platform-aware exposure. |
-| Skills | Built-in and optional procedural instructions that can be loaded by slash command or setup. |
-| Memory | Persistent session storage, full-text search, and pluggable memory providers. |
-| Plugins | General hooks, model-provider profiles, memory providers, context engines, and image generation providers. |
+## Core Philosophy: The Dialectic Learning Loop
 
-## Repository shape
+At the heart of Arcen is the concept of a self-improving agent. The agent loop does not just perform actions; it critiques them:
 
-The main Python surfaces are at the repository root: `run_agent.py`, `model_tools.py`, `toolsets.py`, `cli.py`, and `arcen_state.py`. The terminal UI lives in `ui-tui`, the messaging gateway lives in `gateway`, and plugin surfaces live under `plugins`.
+1. **Thesis (Execution)**: The agent accepts a user goal and plans a series of tool calls.
+2. **Antithesis (Evaluation)**: Verification scripts, terminal outcomes, or human-in-the-loop approvals critique the tool execution.
+3. **Synthesis (Learning)**: The agent saves learnings into its procedural memory (`skills/`), ensuring future sessions benefit from the correction.
 
-For implementation details, use the [architecture guide](/docs/developer-guide/architecture) and [core files reference](/docs/reference/core-files).
+---
 
-## Common routes
+## What Arcen Provides
 
-- New user path: [Quickstart](/docs/getting-started/quickstart)
-- Local use: [CLI and TUI](/docs/user-guide/cli)
-- Remote chat: [Messaging gateway](/docs/user-guide/messaging-gateway)
-- Production: [Production](/docs/deployment/production)
-- Extensibility: [Plugins](/docs/developer-guide/plugins)
+Arcen integrates multiple architectural layers to create a cohesive developer and runtime experience:
+
+### 1. Unified Interface Surfaces
+- **Interactive CLI**: Rich terminal sessions built with `prompt_toolkit` and `Rich` displaying real-time tool runs and model streams.
+- **Ink-Based TUI**: React-like terminal component layout via `ui-tui` and a stdio-based Python JSON-RPC gateway (`tui_gateway`).
+- **Messaging Gateway**: Multi-platform support (`gateway/`) enabling remote control of your agent using Telegram, Slack, WhatsApp, Signal, Discord, and more.
+
+### 2. Extensible Capabilities & Plugins
+- **Pluggable Architecture**: Extend core functionality without touching core packages. Write custom model providers, memory store adapters, context engines, or custom tools under `~/.arcen/plugins/`.
+- **Built-in Toolsets**: System access, Git management, Web search, and directory analysis tools registered with automatic parameter validation.
+- **Docker & SSH Isolation**: Run code safely inside terminal backend sandbox environments (Docker, SSH, Singularity, Daytona, Modal, or local).
+
+### 3. State & Memory Management
+- **Persistent Sessions**: Powered by a robust SQLite Session Database with Full-Text Search (FTS5) for querying past trajectories.
+- **Procedural Skills**: Load runtime instructions interactively, compile new skills with `/learn`, and keep them synchronized across execution profiles.
+
+---
+
+## Repository Structure
+
+To help you find your way around the codebase, here are the main files and folders:
+
+```text
+arcen-agent/
+├── run_agent.py          # AIAgent class — handles core LLM conversation loop
+├── model_tools.py        # Orchestrates tool selection, requirements, and execution
+├── toolsets.py           # Defines groupings of active tools (e.g. _ARCEN_CORE_TOOLS)
+├── cli.py                # Terminal user interface using prompt_toolkit & Rich
+├── arcen_state.py        # SQLite SessionDB storage engine
+├── arcen_constants.py    # Directory resolutions & profile path overrides
+├── gateway/              # Multi-platform gateway runtime (Telegram, Slack, etc.)
+├── plugins/              # Built-in and user-level extension modules
+├── ui-tui/               # TypeScript & Ink UI components for the TUI
+└── tui_gateway/          # Python backend for TUI communications
+```
+
+To learn more about how these parts interact, read our [Architecture Guide](/docs/developer-guide/architecture).

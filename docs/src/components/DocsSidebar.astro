@@ -1,6 +1,7 @@
 ---
 import { navGroups, normalizePath } from "../lib/navigation";
 import Icon from "./Icon.astro";
+import SearchBox from "./SearchBox.astro";
 
 interface Props {
   currentPath: string;
@@ -12,14 +13,13 @@ const activePath = normalizePath(currentPath);
 
 <aside class="docs-sidebar" aria-label="Documentation navigation">
   <div class="sidebar-scroll">
-    <a href="/docs/reference/commands" class="sidebar-search">
-      <span>Search documentation</span>
-      <kbd>/</kbd>
-    </a>
+    <div class="mb-6 max-md:hidden">
+      <SearchBox id="docs-search-sidebar" />
+    </div>
 
     {navGroups.map(group => (
       <section class="mb-7">
-        <h2 class="mb-2 px-2 text-xs font-semibold text-zinc-500">{group.title}</h2>
+        <h2 class="mb-2 px-2.5 text-[9px] font-bold text-zinc-500 uppercase tracking-widest font-mono">// {group.title}</h2>
         <nav class="space-y-1">
           {group.items.map(item => {
             const isActive = activePath === item.href;
@@ -27,13 +27,13 @@ const activePath = normalizePath(currentPath);
               <a
                 href={item.href}
                 class:list={[
-                  "group flex min-h-9 items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition",
+                  "group flex min-h-9 items-center gap-2 rounded-none px-2.5 py-2 text-xs transition border-l-2 font-mono uppercase tracking-wider",
                   isActive
-                    ? "bg-white/[0.08] font-semibold text-white"
-                    : "text-zinc-400 hover:bg-white/[0.05] hover:text-white"
+                    ? "border-l-[#0029ff] bg-white/[0.05] font-bold text-white pl-2"
+                    : "border-l-transparent text-zinc-400 hover:bg-white/[0.03] hover:text-white hover:border-l-zinc-700 pl-2"
                 ]}
               >
-                <Icon name={item.icon} class="size-4 shrink-0" />
+                <Icon name={item.icon} class="size-3.5 shrink-0" />
                 <span>{item.title}</span>
               </a>
             );
