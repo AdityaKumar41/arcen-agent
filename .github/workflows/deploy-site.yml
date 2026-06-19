@@ -1,8 +1,6 @@
 name: Deploy Site
 
 on:
-  release:
-    types: [published]
   push:
     branches: [main]
     paths:
