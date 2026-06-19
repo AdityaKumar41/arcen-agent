@@ -31,7 +31,7 @@ export default function FooterSection() {
                     <div className="col-span-1 md:col-span-1">
                         <h4 className="font-bold text-white mb-4 uppercase tracking-wider text-[10px]">// Resources</h4>
                         <ul className="flex flex-col gap-2.5 text-zinc-400 lowercase">
-                            <li><Link href="https://arcen-cli.arcenpay.com/docs/" target="_blank" className="hover:text-white transition-colors">documentation</Link></li>
+                            <li><Link href="https://agent-docs.arcenpay.com" target="_blank" className="hover:text-white transition-colors">documentation</Link></li>
                             <li><Link href="https://github.com/AdityaKumar41/arcen-agent" target="_blank" className="hover:text-white transition-colors">github</Link></li>
                             <li><Link href="https://agentskills.io" target="_blank" className="hover:text-white transition-colors">skills</Link></li>
                         </ul>

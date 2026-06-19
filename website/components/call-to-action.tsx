@@ -309,7 +309,7 @@ export default function CallToAction() {
                             </Button>
                             
                             <Button asChild size="lg" variant="outline" className="border-white/40 bg-transparent hover:bg-white/10 text-white font-mono font-bold px-8 tracking-wider text-xs uppercase rounded-none transition-all duration-300">
-                                <Link href="https://arcen-cli.arcenpay.com/docs/" target="_blank">
+                                <Link href="https://agent-docs.arcenpay.com" target="_blank">
                                     Read Documentation
                                 </Link>
                             </Button>

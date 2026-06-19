@@ -25,7 +25,7 @@ export const HeroHeader = () => {
                             <Link href="#playground" className="hover:text-white/80 transition-colors">
                                 // playground
                             </Link>
-                            <Link href="https://arcen-cli.arcenpay.com/docs/" target="_blank" className="hover:text-white/80 transition-colors">
+                            <Link href="https://agent-docs.arcenpay.com" target="_blank" className="hover:text-white/80 transition-colors">
                                 // docs
                             </Link>
                         </nav>
@@ -72,7 +72,7 @@ export const HeroHeader = () => {
                         <Link href="#playground" onClick={() => setMenuState(false)} className="hover:text-white transition-colors">
                             // playground
                         </Link>
-                        <Link href="https://arcen-cli.arcenpay.com/docs/" target="_blank" className="hover:text-white transition-colors">
+                        <Link href="https://agent-docs.arcenpay.com" target="_blank" className="hover:text-white transition-colors">
                             // docs
                         </Link>
                         <Button asChild size="sm" className="mt-2 bg-transparent hover:bg-white/10 text-white border border-white/20 uppercase text-xs">

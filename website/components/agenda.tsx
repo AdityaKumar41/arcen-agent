@@ -24,7 +24,7 @@ export default function Agenda() {
                         <p className="text-xs text-zinc-400 leading-relaxed lowercase max-w-md font-mono">
                             arcen is engineered to eliminate the manual cycle of tool-chain building. it autonomously tracks context, synthesizes fresh skills on success, and executes securely in isolated workspaces.
                         </p>
-                        <Link href="https://arcen-cli.arcenpay.com/docs/" target="_blank" className="text-[10px] text-[#0029ff] font-bold tracking-wider hover:underline uppercase">
+                        <Link href="https://agent-docs.arcenpay.com" target="_blank" className="text-[10px] text-[#0029ff] font-bold tracking-wider hover:underline uppercase">
                             View Documentation →
                         </Link>
                     </div>

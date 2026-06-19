@@ -16,7 +16,7 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         title: "Introduction",
-        href: "/docs",
+        href: "/",
         description: "What Arcen is and how the docs are organized.",
         icon: "compass"
       },
