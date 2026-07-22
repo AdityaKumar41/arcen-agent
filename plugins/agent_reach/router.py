@@ -30,6 +30,8 @@ _DOMAIN_MAP: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"(?:^|\.)reddit\.com$", re.I), "reach_reddit"),
     # GitHub — repos/issues/PRs
     (re.compile(r"(?:^|\.)github\.com$", re.I), "reach_github"),
+    # TikTok / Threads / Bluesky / Xiaohongshu / Substack / Medium -> web read
+    (re.compile(r"(?:^|\.)(tiktok|threads|bsky|xiaohongshu|xhslink|substack|medium)\.(com|net|app)$", re.I), "reach_web_read"),
     # Known RSS-only feed domains
     (re.compile(r"^hnrss\.org$", re.I), "reach_rss"),
     (re.compile(r"^feeds\.", re.I), "reach_rss"),

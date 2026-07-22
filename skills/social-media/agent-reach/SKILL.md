@@ -1,7 +1,7 @@
 ---
 name: agent-reach
-description: "Internet capability layer: read & search Twitter, Reddit, YouTube, GitHub, Bilibili, RSS, any URL — zero API fees."
-version: 1.0.0
+description: "Internet capability layer: read & search Twitter, Reddit, YouTube, GitHub, Bilibili, RSS, TikTok, Threads, Bluesky, Substack, Medium, any URL — zero API fees."
+version: 1.1.0
 author: Panniantong/Agent-Reach + Arcen
 license: MIT
 platforms: [linux, macos]
@@ -10,14 +10,14 @@ prerequisites:
   install: "pip install https://github.com/Panniantong/agent-reach/archive/main.zip && agent-reach install"
 metadata:
   arcen:
-    tags: [internet, social-media, twitter, reddit, youtube, github, bilibili, rss, web, search, free]
+    tags: [internet, social-media, twitter, reddit, youtube, github, bilibili, rss, tiktok, threads, bsky, web, search, free]
     homepage: https://github.com/Panniantong/agent-reach
 ---
 
 # Agent-Reach — Internet Capability Layer
 
 Agent-Reach gives you access to the entire internet — Twitter, Reddit, YouTube,
-GitHub, Bilibili, RSS, and any webpage — without paying for APIs. Zero config
+GitHub, Bilibili, RSS, TikTok, Threads, Bluesky, Medium, Substack, and any webpage — without paying for APIs. Zero config
 for most platforms, cookie-based for social ones.
 
 **Use the Arcen tools** (`reach_web_read`, `reach_youtube`, etc.) directly — or
@@ -43,7 +43,7 @@ When a user wants to "read", "check", "summarise", or "search" something:
 | "What can reach do?" / channel broken | `reach_doctor` |
 
 **Single-entry-point shortcut**: `reach_web_read` auto-detects the platform
-from the URL and routes to the right channel. Start here when you're unsure.
+from the URL (including TikTok, Threads, Bluesky, Substack, Medium) and routes to the right channel. Start here when you're unsure.
 
 ---
 
@@ -59,7 +59,7 @@ curl -sL -H "Accept: text/plain" "https://r.jina.ai/https://example.com"
 ```
 
 Jina Reader strips ads, navigation, and noise — returns clean Markdown. Works
-on any public URL including paywalled-but-indexable content.
+on any public URL including paywalled-but-indexable content, Substack, Medium, TikTok, Threads, and Bluesky.
 
 ---
 

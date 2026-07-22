@@ -6021,6 +6021,133 @@ class ArcenCLI:
         except Exception as exc:
             print(f"agent-reach doctor failed: {exc}")
 
+    def _handle_reach_command(self, cmd_original: str) -> None:
+        """Handle /reach [doctor|setup|update|status] — unified Agent-Reach CLI entrypoint."""
+        parts = cmd_original.strip().split(None, 2)
+        subcmd = parts[1].lower() if len(parts) > 1 else "status"
+
+        if subcmd in ("doctor", "doc", "diag", "health"):
+            self._handle_reach_doctor_command()
+        elif subcmd in ("setup", "config", "auth"):
+            rest = parts[2] if len(parts) > 2 else "all"
+            self._handle_reach_setup_command(f"/reach-setup {rest}")
+        elif subcmd in ("update", "upgrade"):
+            print("🔄  Updating Agent-Reach and sub-channel tools...\n")
+            try:
+                from plugins.agent_reach.installer import update_agent_reach, update_subchannel_tools
+                ok, msg = update_agent_reach()
+                print(f"  {'✅' if ok else '❌'}  {msg}")
+
+                print("\n  📦 Updating sub-channel tools (yt-dlp, bili-cli, feedparser, etc.):")
+                tool_results = update_subchannel_tools()
+                for tool, status in tool_results.items():
+                    print(f"     • {tool:<12} {status}")
+                print("\nRun /reach doctor to check channel health.")
+            except Exception as exc:
+                print(f"❌ Update failed: {exc}")
+        else:
+            print("🌐  Agent-Reach — Internet Capability Layer\n")
+            print("Usage: /reach [subcommand]\n")
+            print("Subcommands:")
+            print("  doctor  (doc)   — Run health check on all channels")
+            print("  setup   [name]  — Guide setup for Twitter, Reddit, YouTube, Bilibili, etc.")
+            print("  update  (up)    — Upgrade Agent-Reach & sub-channel tools to latest")
+            print("  status          — Show this overview\n")
+            print("Run /reach doctor to check channel readiness.")
+
+    def _handle_learn_command(self, cmd_original: str) -> None:
+        """Handle /learn [skill-name] — Hermes-style trajectory reflection and skill distillation."""
+        from agent.reflection import reflect_and_distill_skill
+
+        parts = cmd_original.strip().split(None, 1)
+        skill_name = parts[1].strip() if len(parts) > 1 else None
+
+        print("🧠 Reflecting on session trajectory to distill skill...")
+        messages = getattr(self, "messages", [])
+        if not messages and hasattr(self, "agent") and getattr(self.agent, "messages", None):
+            messages = self.agent.messages
+
+        ok, msg, path = reflect_and_distill_skill(messages, skill_name=skill_name)
+        if ok:
+            print(f"  ✅ {msg}")
+            if hasattr(self, "_reload_skills"):
+                self._reload_skills()
+                print("  ✨ Skill reloaded into active toolchain.")
+        else:
+            print(f"  ❌ {msg}")
+
+    def _handle_evolve_command(self, cmd_original: str) -> None:
+        """Handle /evolve <skill-name> — Hermes-style prompt & skill optimization."""
+        from agent.evolution import analyze_and_evolve_skill
+
+        parts = cmd_original.strip().split(None, 1)
+        if len(parts) < 2 or not parts[1].strip():
+            print("  Usage: /evolve <skill-name>")
+            print("  Example: /evolve agent-reach")
+            return
+
+        skill_name = parts[1].strip()
+        print(f"🧬 Evolving skill `{skill_name}` with GEPA/DSPy optimization rules...")
+        ok, report, _ = analyze_and_evolve_skill(skill_name)
+        if ok:
+            print(f"\n{report}")
+            if hasattr(self, "_reload_skills"):
+                self._reload_skills()
+                print("✨ Reloaded updated skill into active toolchain.")
+        else:
+            print(f"  ❌ {report}")
+
+    def _handle_mcp_command(self, cmd_original: str) -> None:
+        """Handle /mcp [list|status|add|reload] — MCP server management."""
+        parts = cmd_original.strip().split(None, 1)
+        arg_str = parts[1].strip() if len(parts) > 1 else "list"
+        subcmd = arg_str.split()[0].lower() if arg_str else "list"
+
+        if subcmd == "add":
+            add_parts = arg_str.split(None, 2)
+            if len(add_parts) < 3:
+                print("  Usage: /mcp add <server-name> <command-or-url>")
+                print("  Example: /mcp add memory npx -y @modelcontextprotocol/server-memory")
+                return
+            server_name, server_cmd = add_parts[1], add_parts[2]
+            print(f"🔌 Registering MCP server `{server_name}`: {server_cmd}")
+            try:
+                from arcen_cli.config import load_config, save_config
+                cfg = load_config()
+                mcp_servers = cfg.setdefault("mcp_servers", {})
+                mcp_servers[server_name] = {"command": server_cmd}
+                save_config(cfg)
+                print(f"  ✅ MCP server `{server_name}` saved to config.yaml.")
+                if hasattr(self, "_confirm_and_reload_mcp"):
+                    self._confirm_and_reload_mcp(cmd_original)
+            except Exception as exc:
+                print(f"  ❌ Failed to register MCP server: {exc}")
+        elif subcmd in ("reload", "refresh"):
+            if hasattr(self, "_confirm_and_reload_mcp"):
+                self._confirm_and_reload_mcp(cmd_original)
+            else:
+                print("  MCP reloaded.")
+        elif subcmd in ("status", "check"):
+            print("🔌 Model Context Protocol (MCP) Status:")
+            try:
+                from model_tools import get_mcp_status
+                status = get_mcp_status()
+                print(status if isinstance(status, str) else str(status))
+            except Exception:
+                print("  No active MCP servers connected.")
+        else:
+            print("🔌 Model Context Protocol (MCP) Servers:")
+            try:
+                from model_tools import list_mcp_servers
+                servers = list_mcp_servers()
+                if not servers:
+                    print("  No MCP servers configured.")
+                else:
+                    for s in servers:
+                        print(f"  • {s}")
+            except Exception:
+                print("  MCP server information unavailable.")
+
     def _handle_agents_command(self):
         """Handle /agents — show background processes and agent status."""
         from tools.process_registry import format_uptime_short, process_registry
@@ -9172,10 +9299,18 @@ class ArcenCLI:
                         print(f"  {status} {p['name']}{version}{detail}{error}")
             except Exception as e:
                 print(f"Plugin system error: {e}")
+        elif canonical == "reach":
+            self._handle_reach_command(cmd_original)
         elif canonical in ("reach-setup", "reach_setup"):
             self._handle_reach_setup_command(cmd_original)
         elif canonical in ("reach-doctor", "reach_doctor"):
             self._handle_reach_doctor_command()
+        elif canonical in ("learn", "reflect"):
+            self._handle_learn_command(cmd_original)
+        elif canonical == "evolve":
+            self._handle_evolve_command(cmd_original)
+        elif canonical == "mcp":
+            self._handle_mcp_command(cmd_original)
         elif canonical == "rollback":
             self._handle_rollback_command(cmd_original)
         elif canonical == "snapshot":

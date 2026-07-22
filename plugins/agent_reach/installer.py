@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import shutil
 import subprocess
 import sys
 from typing import Optional
@@ -101,6 +102,62 @@ def ensure_agent_reach_installed() -> tuple[bool, str]:
         return False, f"agent-reach installation error: {exc}"
 
 
+def update_agent_reach() -> tuple[bool, str]:
+    """Force-update agent-reach package and underlying channel tools.
+
+    Returns:
+        (success: bool, message: str)
+    """
+    global _cached_available, _cached_version
+    logger.info("Updating agent-reach from %s...", _INSTALL_SOURCE)
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--upgrade", "--quiet", _INSTALL_SOURCE],
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        _cached_available = None
+        _cached_version = None
+        importlib.invalidate_caches()
+
+        if result.returncode != 0:
+            err = (result.stderr or result.stdout or "unknown pip error").strip()
+            return False, f"Failed to update agent-reach: {err}"
+
+        # Run agent-reach install if the CLI is available
+        if shutil.which("agent-reach"):
+            subprocess.run(["agent-reach", "install", "--quiet"], capture_output=True, timeout=120)
+
+        version = get_agent_reach_version() or "latest"
+        return True, f"agent-reach updated successfully to {version}."
+    except Exception as exc:
+        logger.exception("Error updating agent-reach: %s", exc)
+        return False, f"agent-reach update failed: {exc}"
+
+
+def update_subchannel_tools() -> dict[str, str]:
+    """Update core subchannel CLI packages (yt-dlp, feedparser, bili-cli, etc.)."""
+    tools_to_update = ["yt-dlp", "feedparser", "bili-cli", "opencli", "rdt-cli"]
+    results = {}
+    for pkg in tools_to_update:
+        try:
+            res = subprocess.run(
+                [sys.executable, "-m", "pip", "install", "--upgrade", "--quiet", pkg],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+            if res.returncode == 0:
+                results[pkg] = "updated"
+            else:
+                results[pkg] = f"error: {res.stderr.strip()[:100]}"
+        except Exception as exc:
+            results[pkg] = f"failed: {exc}"
+    return results
+
+
 def get_install_hint() -> str:
     """Return a human-readable install command for the user."""
     return f"pip install {_INSTALL_SOURCE}"
+

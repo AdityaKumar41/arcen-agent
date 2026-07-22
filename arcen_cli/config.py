@@ -1658,6 +1658,13 @@ DEFAULT_CONFIG = {
         # scanned regardless of this setting.
         "guard_agent_created": False,
     },
+    # Agent-Reach internet capability settings
+    "reach": {
+        "auto_update": True,
+        "check_interval_hours": 24,
+        "default_format": "markdown",
+        "max_length": 8000,
+    },
 
     # Curator — background skill maintenance.
     #

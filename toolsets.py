@@ -70,6 +70,9 @@ _ARCEN_CORE_TOOLS = [
     "kanban_unblock",
     # Computer use (macOS, gated on cua-driver being installed via check_fn)
     "computer_use",
+    # Agent-Reach internet capability layer (gated via plugin check_fn)
+    "reach_web_read", "reach_youtube", "reach_github", "reach_rss",
+    "reach_bilibili", "reach_search", "reach_twitter", "reach_reddit", "reach_doctor",
 ]
 
 # Webhook events may originate from untrusted third-party content (for example,

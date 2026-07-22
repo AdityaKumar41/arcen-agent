@@ -1027,13 +1027,16 @@ def _handle_reach_doctor(args: dict, **kw) -> str:
         invalidate_cache()
 
     if not _cmd_available("agent-reach"):
-        return tool_error(
-            "agent-reach CLI is not installed.\n\n"
-            "Install it with:\n"
-            "  pip install https://github.com/Panniantong/agent-reach/archive/main.zip\n"
-            "  agent-reach install\n\n"
-            "After installation, agent-reach doctor will show channel health."
-        )
+        from plugins.agent_reach.installer import ensure_agent_reach_installed
+        ok, msg = ensure_agent_reach_installed()
+        if not ok or not _cmd_available("agent-reach"):
+            return tool_error(
+                f"agent-reach CLI is not installed.\n{msg}\n\n"
+                "Install it with:\n"
+                "  pip install https://github.com/Panniantong/agent-reach/archive/main.zip\n"
+                "  agent-reach install\n\n"
+                "After installation, agent-reach doctor will show channel health."
+            )
 
     # Run doctor directly to get fresh terminal output (more readable than JSON)
     cmd = ["agent-reach", "doctor"]
