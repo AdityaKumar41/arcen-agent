@@ -1629,6 +1629,74 @@ function Set-PathVariable {
     Write-Success "arcen command ready"
 }
 
+function Copy-ConfigTemplates {
+    Write-Info "Setting up configuration files..."
+
+    # Create $ArcenHome directory structure
+    $subdirs = @("cron", "sessions", "logs", "pairing", "hooks", "image_cache", "audio_cache", "memories", "skills")
+    foreach ($dir in $subdirs) {
+        $path = Join-Path $ArcenHome $dir
+        if (-not (Test-Path $path)) {
+            New-Item -ItemType Directory -Force -Path $path | Out-Null
+        }
+    }
+
+    # Create .env at $ArcenHome\.env if it does not exist
+    $envFile = Join-Path $ArcenHome ".env"
+    $envExample = Join-Path $InstallDir ".env.example"
+    if (-not (Test-Path $envFile)) {
+        if (Test-Path $envExample) {
+            Copy-Item $envExample $envFile -Force
+            Write-Success "Created $envFile from template"
+        } else {
+            New-Item -ItemType File -Force -Path $envFile | Out-Null
+            Write-Success "Created $envFile"
+        }
+    } else {
+        Write-Info "$envFile already exists, keeping it"
+    }
+
+    # Detect system browser for browser tooling
+    $systemBrowser = Find-SystemBrowser
+    if ($systemBrowser) {
+        Write-BrowserEnv -BrowserPath $systemBrowser
+    }
+
+    # Create config.yaml at $ArcenHome\config.yaml if it does not exist
+    $configFile = Join-Path $ArcenHome "config.yaml"
+    $configExample = Join-Path $InstallDir "cli-config.yaml.example"
+    if (-not (Test-Path $configFile)) {
+        if (Test-Path $configExample) {
+            Copy-Item $configExample $configFile -Force
+            Write-Success "Created $configFile from template"
+        }
+    } else {
+        Write-Info "$configFile already exists, keeping it"
+    }
+
+    # Create SOUL.md if it does not exist (global persona file)
+    $soulFile = Join-Path $ArcenHome "SOUL.md"
+    if (-not (Test-Path $soulFile)) {
+        $soulContent = @"
+# Arcen Agent Persona
+
+<!--
+This file defines the agent's personality and tone.
+Edit this to customize how Arcen communicates with you.
+-->
+
+You are Arcen, a capable and pragmatic AI assistant.
+- Be concise, direct, and helpful.
+- When writing code, write clean, well-tested, production-ready code.
+- Prefer existing tools and libraries over reinventing solutions.
+"@
+        Set-Content -Path $soulFile -Value $soulContent -Encoding UTF8
+        Write-Success "Created $soulFile from template"
+    } else {
+        Write-Info "$soulFile already exists, keeping it"
+    }
+}
+
 function Install-PlatformSdks {
     # Ensure messaging-platform SDKs matching tokens the user added to
     # ~/.arcen/.env are importable.  Two problems this solves:
