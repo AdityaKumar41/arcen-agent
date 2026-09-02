@@ -1518,6 +1518,77 @@ except Exception:
     Write-Success "All dependencies installed"
 }
 
+function Install-NodeDeps {
+    <#
+    .SYNOPSIS
+    Install Node.js dependencies for the repo (browser tools) and the TUI.
+
+    Mirrors scripts/install.sh::install_node_deps so Windows and POSIX installs
+    converge on the same optional behavior: Node deps are never fatal -- if
+    Node is missing we skip with an info line; if a given npm install fails we
+    log a warning and continue.
+
+    This stage is distinct from, and coexists with, the PostInstall
+    "browser" path (Invoke-EnsureMode -Deps "node,browser") which installs the
+    agent-browser CLI globally and its Chromium engine.  Here we only run
+    `npm install` inside the checked-out repository (root + ui-tui) so the
+    TUI bundles and the npm-shipped browser tooling are present.
+    #>
+    Sync-EnvPath
+    if (-not $script:HasNode) {
+        if (Get-Command node -ErrorAction SilentlyContinue) {
+            $script:HasNode = $true
+        } else {
+            Write-Info "Skipping Node.js dependencies (Node not installed)"
+            return
+        }
+    }
+
+    # Locate npm, preferring the .cmd shim so we don't try to execute a .ps1
+    # through the native-command pipeline.
+    $npm = Resolve-NpmCmd
+    if (-not $npm) {
+        Write-Warn "npm not found even though node is present -- skipping Node.js dependencies"
+        return
+    }
+
+    $prevEAP = $ErrorActionPreference
+
+    # Repository root -- browser tooling (agent-browser) + workspace wiring.
+    $rootPkg = Join-Path $InstallDir "package.json"
+    if (Test-Path $rootPkg) {
+        Write-Info "Installing Node.js dependencies (browser tools)..."
+        Push-Location $InstallDir
+        $ErrorActionPreference = "Continue"
+        & $npm install --silent 2>&1 | Out-Null
+        $npmExit = $LASTEXITCODE
+        $ErrorActionPreference = $prevEAP
+        Pop-Location
+        if ($npmExit -ne 0) {
+            Write-Warn "npm install failed (browser tools may not work)"
+        } else {
+            Write-Success "Node.js dependencies installed"
+        }
+    }
+
+    # TUI build (ui-tui/package.json).
+    $tuiPkg = Join-Path $InstallDir "ui-tui\package.json"
+    if (Test-Path $tuiPkg) {
+        Write-Info "Installing TUI dependencies..."
+        Push-Location (Join-Path $InstallDir "ui-tui")
+        $ErrorActionPreference = "Continue"
+        & $npm install --silent 2>&1 | Out-Null
+        $npmExit = $LASTEXITCODE
+        $ErrorActionPreference = $prevEAP
+        Pop-Location
+        if ($npmExit -ne 0) {
+            Write-Warn "TUI npm install failed (arcen --tui may not work)"
+        } else {
+            Write-Success "TUI dependencies installed"
+        }
+    }
+}
+
 function Set-PathVariable {
     Write-Info "Setting up arcen command..."
     

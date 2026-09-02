@@ -89,7 +89,7 @@ if ($manifest) {
 
     # Specific stage names that the GUI driver will rely on
     $names = $manifest.stages | ForEach-Object { $_.name }
-    foreach ($expected in @("uv", "python", "git", "venv", "dependencies", "configure", "gateway")) {
+    foreach ($expected in @("uv", "python", "git", "venv", "dependencies", "node-deps", "configure", "gateway")) {
         Assert-True ($names -contains $expected) -Label "manifest contains stage '$expected'"
     }
 
@@ -98,6 +98,68 @@ if ($manifest) {
     Assert-True ($interactive -contains "configure") -Label "'configure' stage flagged needs_user_input"
     Assert-True ($interactive -contains "gateway") -Label "'gateway' stage flagged needs_user_input"
 }
+
+# -----------------------------------------------------------------------------
+# Test: every stage worker function is defined in install.ps1
+# -----------------------------------------------------------------------------
+# This is a regression guard for the (previously fatal) case where a stage
+# definition referenced a worker that didn't exist -- e.g. the "node-deps"
+# stage pointed at an undefined Install-NodeDeps function, which aborted the
+# whole default interactive install right after "All dependencies installed".
+# We validate that (a) install.ps1 parses without syntax errors and (b) every
+# Worker referenced by a stage in $InstallStages resolves to a function defined
+# in the same file.  Function/worker names are collected via regex over the
+# raw source -- low-risk, deterministic, and independent of AST recursion,
+# which is unnecessary for this name-resolver check.
+Write-Host ""
+Write-Host "-- every stage worker is defined --"
+
+$scriptSource = Get-Content $installScript -Raw
+Assert-True (-not [string]::IsNullOrWhiteSpace($scriptSource)) `
+    -Label "install.ps1 is readable (got $($scriptSource.Length) chars)"
+
+# (a) Parse-level validation -- catches syntax errors in install.ps1 itself.
+$tokens = $null
+$parseErrors = $null
+[System.Management.Automation.Language.Parser]::ParseFile(
+    $installScript,
+    [ref]$tokens,
+    [ref]$parseErrors
+) | Out-Null
+Assert-True ($parseErrors.Count -eq 0) `
+    -Label "install.ps1 parses without syntax errors (got $($parseErrors.Count))"
+
+# (b) Collect every function defined in install.ps1.
+#     Matches top-level `function Name` lines (the entire file defines
+#     helpers at column 0; nested functions appear as `    function X` inside
+#     other function bodies -- we capture those too via the \s* prefix).
+$functionNames = @(
+    [regex]::Matches($scriptSource, "(?m)^\s*function\s+([A-Za-z0-9_-]+)") |
+        ForEach-Object { $_.Groups[1].Value } |
+        Sort-Object -Unique
+)
+Assert-True ($functionNames.Count -gt 0) `
+    -Label "found function definitions in install.ps1 (got $($functionNames.Count))"
+
+# (c) Collect every Worker = "..." reference across both $InstallStages blocks.
+#     Both blocks are built with the identical `@{ ... Worker = "..." ... }`
+#     shape, so one pattern over the whole source is sufficient.
+$workerNames = @(
+    [regex]::Matches($scriptSource, 'Worker\s*=\s*"([A-Za-z0-9_-]+)"') |
+        ForEach-Object { $_.Groups[1].Value } |
+        Sort-Object -Unique
+)
+Assert-True ($workerNames.Count -gt 0) `
+    -Label "found stage worker names in install.ps1 (got $($workerNames.Count))"
+
+$allDefined = $true
+foreach ($worker in $workerNames) {
+    if ($functionNames -notcontains $worker) {
+        Write-Host "  stage worker '$worker' is NOT defined in install.ps1" -ForegroundColor Red
+        $allDefined = $false
+    }
+}
+Assert-True $allDefined -Label "every stage worker function is defined"
 
 # -----------------------------------------------------------------------------
 # Test: unknown stage name -> exit 2, structured JSON error
